@@ -55,7 +55,7 @@ export function registerAskUserQuestions(
     {
       title: "Ask user questions",
       description:
-        "Ask one important clarification question when the answer materially affects the user's requested outcome. Reuse known context and do not ask about minor details. After this tool succeeds, end the current turn immediately: do not explain, assume an answer, continue the task, or call more tools. Wait for the user's next message, whether submitted through the UI or typed in chat.",
+        "Ask 1–5 concise clarification questions when unknown goals, scope, constraints, deliverables, or preferences materially affect the user's requested outcome. Reuse known context, do not repeat answered questions, and continue without asking only when all remaining choices are minor and low-cost to change. After this tool succeeds, end the current turn immediately: do not explain, assume answers, continue the task, or call more tools. Wait for the user's next message, whether submitted through the UI or typed in chat.",
       inputSchema: askUserQuestionsInputSchema,
       outputSchema: askUserQuestionsOutputSchema,
       annotations: {

@@ -1,65 +1,71 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useApp } from "@modelcontextprotocol/ext-apps/react";
 import { Button } from "@openai/apps-sdk-ui/components/Button";
-import { formatAnswerMessage } from "./formatAnswer";
-import type { QuestionFormData, SingleSelectAnswer } from "./types";
+import { QuestionCard } from "./components/QuestionCard";
+import { getCopy, type UiCopy } from "./copy";
+import type { Answer, QuestionFormData } from "./types";
+import {
+  createInitialAnswers,
+  formatAnswerMessage,
+} from "./utils/answers";
+import { validateAnswers } from "./utils/validation";
 
 type SubmitStatus = "editing" | "submitting" | "submitted" | "error";
 
-const emptyAnswer: SingleSelectAnswer = {
-  otherSelected: false,
-  otherText: "",
-};
+type AppInstance = Parameters<
+  NonNullable<Parameters<typeof useApp>[0]["onAppCreated"]>
+>[0];
 
 interface QuestionFormProps {
   data: QuestionFormData;
+  copy: UiCopy;
   sendMessage: (message: string) => Promise<void>;
 }
 
-export function QuestionForm({ data, sendMessage }: QuestionFormProps) {
-  const [answers, setAnswers] = useState<Record<string, SingleSelectAnswer>>({});
+function normalizeToolData(candidate: QuestionFormData): QuestionFormData {
+  return {
+    ...candidate,
+    questions: candidate.questions.map((question) => ({
+      ...question,
+      required: question.required ?? true,
+      allow_other:
+        question.type === "text" ? false : (question.allow_other ?? true),
+    })),
+  } as QuestionFormData;
+}
+
+export function QuestionForm({ data, copy, sendMessage }: QuestionFormProps) {
+  const [answers, setAnswers] = useState(() =>
+    createInitialAnswers(data.questions),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<SubmitStatus>("editing");
   const [fallbackMessage, setFallbackMessage] = useState("");
+  const submittingRef = useRef(false);
 
-  const question = data.questions[0];
-  // Tool input may arrive after the iframe initializes on approval-gated hosts.
-  if (!question) return <p role="status">No question was provided.</p>;
-  const answer = answers[question.id] ?? emptyAnswer;
+  if (data.questions.length === 0) {
+    return <p role="status">{copy.noQuestions}</p>;
+  }
 
-  const updateAnswer = (next: SingleSelectAnswer) => {
-    setAnswers((current) => ({ ...current, [question.id]: next }));
-    setErrors((current) => ({ ...current, [question.id]: "" }));
+  const updateAnswer = (questionId: string, answer: Answer) => {
+    setAnswers((current) => ({ ...current, [questionId]: answer }));
+    setErrors((current) => {
+      if (!current[questionId]) return current;
+      const next = { ...current };
+      delete next[questionId];
+      return next;
+    });
     if (status === "error") setStatus("editing");
   };
 
-  const chooseOption = (optionId: string) => {
-    updateAnswer({ ...answer, optionId, otherSelected: false });
-  };
-
-  const chooseOther = () => {
-    updateAnswer({ ...answer, optionId: undefined, otherSelected: true });
-  };
-
-  const validate = (): boolean => {
-    if (question.required && !answer.optionId && !answer.otherSelected) {
-      setErrors({ [question.id]: "Please answer this question." });
-      return false;
-    }
-    if (answer.otherSelected && !answer.otherText.trim()) {
-      setErrors({ [question.id]: "Please type your answer." });
-      return false;
-    }
-    setErrors({});
-    return true;
-  };
-
   const submit = async () => {
-    if (status === "submitting" || status === "submitted" || !validate()) return;
-    const message = formatAnswerMessage(data, {
-      ...answers,
-      [question.id]: answer,
-    });
+    if (submittingRef.current || status === "submitted") return;
+    const nextErrors = validateAnswers(data.questions, answers, copy);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    const message = formatAnswerMessage(data, answers, copy);
+    submittingRef.current = true;
     setStatus("submitting");
     setFallbackMessage("");
     try {
@@ -68,88 +74,48 @@ export function QuestionForm({ data, sendMessage }: QuestionFormProps) {
     } catch {
       setFallbackMessage(message);
       setStatus("error");
+      submittingRef.current = false;
     }
   };
 
   const disabled = status === "submitting" || status === "submitted";
+  const buttonLabel =
+    status === "submitting"
+      ? copy.submitting
+      : status === "submitted"
+        ? copy.submitted
+        : status === "error"
+          ? copy.retry
+          : copy.submit;
 
   return (
     <main className="question-app">
       {data.title ? <h1>{data.title}</h1> : null}
-      <fieldset disabled={disabled} aria-describedby={`${question.id}-error`}>
-        <legend>
-          {question.question}
-          {question.required ? <span aria-label="required"> *</span> : null}
-        </legend>
-        {question.description ? (
-          <p className="question-description">{question.description}</p>
-        ) : null}
-        <div className="options">
-          {question.options.map((option) => (
-            <label className="option" key={option.id}>
-              <span>
-                <input
-                  type="radio"
-                  name={question.id}
-                  checked={!answer.otherSelected && answer.optionId === option.id}
-                  onChange={() => chooseOption(option.id)}
-                />
-                <strong>{option.label}</strong>
-              </span>
-              {option.description ? <small>{option.description}</small> : null}
-            </label>
-          ))}
-          {question.allow_other ? (
-            <label className="option">
-              <span>
-                <input
-                  type="radio"
-                  name={question.id}
-                  checked={answer.otherSelected}
-                  onChange={chooseOther}
-                />
-                <strong>Other</strong>
-              </span>
-              {answer.otherSelected ? (
-                <input
-                  className="other-input"
-                  aria-label="Other answer"
-                  autoFocus
-                  value={answer.otherText}
-                  placeholder={question.placeholder ?? "Type your answer..."}
-                  onChange={(event) =>
-                    updateAnswer({ ...answer, otherText: event.target.value })
-                  }
-                />
-              ) : null}
-            </label>
-          ) : null}
-        </div>
-        {errors[question.id] ? (
-          <p className="error" id={`${question.id}-error`} role="alert">
-            {errors[question.id]}
-          </p>
-        ) : null}
-      </fieldset>
+      {data.questions.map((question) => (
+        <QuestionCard
+          key={question.id}
+          question={question}
+          answer={answers[question.id]}
+          copy={copy}
+          disabled={disabled}
+          error={errors[question.id]}
+          onChange={(answer) => updateAnswer(question.id, answer)}
+        />
+      ))}
 
       <Button
+        type="button"
         color="primary"
         block
         disabled={disabled}
         onClick={() => void submit()}
       >
-        {status === "submitting"
-          ? "Submitting…"
-          : status === "submitted"
-            ? "Submitted"
-            : status === "error"
-              ? "Try again"
-              : "Submit"}
+        {buttonLabel}
       </Button>
 
       {status === "error" ? (
         <section className="send-error" role="alert">
-          <p>Could not send your answer. Try again or copy this text into chat:</p>
+          <p>{copy.sendFailed}</p>
           <pre tabIndex={0}>{fallbackMessage}</pre>
         </section>
       ) : null}
@@ -159,22 +125,20 @@ export function QuestionForm({ data, sendMessage }: QuestionFormProps) {
 
 export function AskUserQuestionsApp() {
   const [data, setData] = useState<QuestionFormData | null>(null);
+  const [locale, setLocale] = useState<string>();
 
-  const onAppCreated = useCallback(
-    (app: Parameters<
-      NonNullable<Parameters<typeof useApp>[0]["onAppCreated"]>
-    >[0]) => {
-      app.ontoolinput = (input) => {
-        const candidate = input.arguments as QuestionFormData | undefined;
-        if (candidate?.questions) setData(candidate);
-      };
-      app.ontoolresult = (result) => {
-        const candidate = result.structuredContent as QuestionFormData | undefined;
-        if (candidate?.questions) setData(candidate);
-      };
-    },
-    [],
-  );
+  const onAppCreated = useCallback((app: AppInstance) => {
+    const updateData = (candidate: unknown) => {
+      const value = candidate as QuestionFormData | undefined;
+      if (value?.questions) setData(normalizeToolData(value));
+    };
+
+    app.ontoolinput = (input) => updateData(input.arguments);
+    app.ontoolresult = (result) => updateData(result.structuredContent);
+    app.onhostcontextchanged = (context) => {
+      if (context.locale) setLocale(context.locale);
+    };
+  }, []);
 
   const { app, isConnected, error } = useApp({
     appInfo: { name: "ask-user-questions-ui", version: "0.1.0" },
@@ -183,14 +147,22 @@ export function AskUserQuestionsApp() {
     autoResize: true,
   });
 
-  if (error) return <p role="alert">Unable to connect to the chat host.</p>;
+  useEffect(() => {
+    if (isConnected && app) setLocale(app.getHostContext()?.locale);
+  }, [app, isConnected]);
+
+  const copy = getCopy(locale);
+  if (error) return <p role="alert">{copy.connectionFailed}</p>;
   if (!isConnected || !app || !data) {
-    return <p role="status">Loading questions…</p>;
+    return <p role="status">{copy.loading}</p>;
   }
 
+  const formKey = data.questions.map((question) => question.id).join("\u0000");
   return (
     <QuestionForm
+      key={formKey}
       data={data}
+      copy={copy}
       sendMessage={async (message) => {
         const result = await app.sendMessage({
           role: "user",

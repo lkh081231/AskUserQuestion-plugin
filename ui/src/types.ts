@@ -4,24 +4,59 @@ export interface Option {
   description?: string;
 }
 
-export interface SingleSelectQuestion {
+interface BaseQuestion {
   id: string;
   question: string;
   description?: string;
-  type: "single_select";
-  options: Option[];
   required: boolean;
-  allow_other: boolean;
   placeholder?: string;
 }
 
-export interface QuestionFormData {
-  title?: string;
-  questions: SingleSelectQuestion[];
+export interface SingleSelectQuestion extends BaseQuestion {
+  type: "single_select";
+  options: Option[];
+  allow_other: boolean;
 }
 
-export interface SingleSelectAnswer {
-  optionId?: string;
+export interface MultiSelectQuestion extends BaseQuestion {
+  type: "multi_select";
+  options: Option[];
+  allow_other: boolean;
+}
+
+export interface TextQuestion extends BaseQuestion {
+  type: "text";
+  allow_other: false;
+}
+
+export interface ConfirmQuestion extends BaseQuestion {
+  type: "confirm";
+  allow_other: boolean;
+}
+
+export type Question =
+  | SingleSelectQuestion
+  | MultiSelectQuestion
+  | TextQuestion
+  | ConfirmQuestion;
+
+export interface QuestionFormData {
+  title?: string;
+  questions: Question[];
+}
+
+export interface ChoiceAnswer {
+  kind: "choice";
+  optionIds: string[];
+  optionNotes: Record<string, string>;
   otherSelected: boolean;
   otherText: string;
 }
+
+export interface TextAnswer {
+  kind: "text";
+  text: string;
+}
+
+export type Answer = ChoiceAnswer | TextAnswer;
+export type Answers = Record<string, Answer>;

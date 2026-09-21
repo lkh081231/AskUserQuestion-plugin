@@ -14,6 +14,7 @@
 | 答案回传 | 通过 `ui/message` 发送人类可读的 Q/A 消息 |
 | 题型 | `single_select`、`multi_select`、`text`、`confirm` |
 | 自定义答案 | 选择类题目默认提供 UI 自动添加的 Other |
+| 选项补充说明 | 每个普通选项下方提供可选输入，默认空，提交时附在选项文字后 |
 | 状态管理 | 仅当前卡片的填写与提交状态 |
 | 交互参考 | Claude 网页版 / Desktop 的聊天内交互式提问 |
 
@@ -39,7 +40,7 @@ MCP 请求正常返回，不保持挂起。这个行为由工具说明和 skill 
 ### 2.1 本期交付
 
 - 一个 MCP 工具、一个问答 UI 和一个配套 skill。
-- 四种题型，以及 `Other`、`required`、`description`、`placeholder`、`Submit`。
+- 四种题型、选项补充说明，以及 `Other`、`required`、`description`、`placeholder`、`Submit`。
 - 输入和答案的基本校验、重复点击保护、发送失败提示。
 - 可安装的插件包、可访问的 MCP 服务、部署和安装说明。
 - 验收用例及公开发布所需材料。
@@ -66,21 +67,25 @@ MCP 请求正常返回，不保持挂起。这个行为由工具说明和 skill 
 - 点击选项只更新表单；点击 Submit 才发送答案。
 - 用户也可直接在聊天输入框回答，Assistant 不要求其返回卡片再次提交。
 - 支持键盘操作，界面文案跟随会话语言；下方英文示例仅用于说明。
-- Other 始终排在普通选项之后，选中后立即展开文本框。
+- 每个普通选项下方显示补充说明输入框，默认空；选中该选项后可填写，未选中时禁用。
+- Other 始终排在普通选项之后，选中后立即展开自定义答案文本框。
 
 Claude 官方资料确认了选择、多选和直接打字回答的交互，但未公开完整 AskUserQuestion 协议。默认 Other、题数限制和统一 Submit 是本项目的设计。[Claude 交互说明](https://support.claude.com/en/articles/13641943-visual-and-interactive-content)
 
 ### 3.2 四种题型
 
-**单选题：**
+**单选题（示例为用户已选择 Docker 并补充说明后的状态）：**
 
 ```text
 Which deployment method do you prefer?
-○ Docker
+● Docker
+  [ 使用 Docker Compose，部署在 NAS 上 ]
 ○ Native Linux
+  [ 补充说明（可选） ]（未选中，禁用）
 ○ Kubernetes
+  [ 补充说明（可选） ]（未选中，禁用）
 ○ Other
-  └─ Type your answer...
+  └─ 选中后输入自定义答案
 ```
 
 **多选题（示例为用户已勾选后的状态）：**
@@ -88,9 +93,13 @@ Which deployment method do you prefer?
 ```text
 Which features do you need?
 ☑ Web UI
+  [ 支持深色模式 ]
 ☐ API
+  [ 补充说明（可选） ]（未选中，禁用）
 ☑ Authentication
+  [ 补充说明（可选） ]
 ☐ Database
+  [ 补充说明（可选） ]（未选中，禁用）
 ☐ Other
   └─ Type your answer...
 ```
@@ -107,7 +116,9 @@ Any additional requirements?
 ```text
 Proceed with this architecture?
 ○ Yes
+  [ 补充说明（可选） ]（未选中，禁用）
 ○ No
+  [ 补充说明（可选） ]（未选中，禁用）
 ○ Other
   └─ Type your answer...
 ```
@@ -119,7 +130,8 @@ Proceed with this architecture?
 | 每次题数 | 建议 1–4 题，通常 3 题足够；最多 5 题 |
 | 题型选择 | 优先单选和多选，降低输入成本 |
 | 普通选项数 | 单选 / 多选提供 2–5 项，不包含 UI 自动添加的 Other |
-| 题目与选项说明 | 可通过 `description` 提供简短补充信息 |
+| 题目与选项说明 | 模型通过 `description` 提供只读提示 |
+| 用户补充说明 | 普通选项下方的可选输入；与模型提供的 `description` 分开 |
 | 自定义输入提示 | 默认 `Type your answer...`，可通过 `placeholder` 覆盖 |
 
 选项说明示例：
@@ -128,10 +140,13 @@ Proceed with this architecture?
 Preferred architecture?
 ○ Monolith
   Simplest deployment
+  [ 补充说明（可选） ]（未选中，禁用）
 ○ Modular monolith
   Better separation while remaining one service
+  [ 补充说明（可选） ]（未选中，禁用）
 ○ Microservices
   Independent services
+  [ 补充说明（可选） ]（未选中，禁用）
 ○ Other
   Type your answer...
 ```
@@ -168,6 +183,8 @@ interface Option {
 
 TypeScript interface 用于说明；实际注册工具时使用 JSON Schema / Zod 实施运行时约束。
 
+`Option.description` 是模型提供的只读说明。用户补充说明保存在当前卡片的答案状态中，按题目和选项 ID 对应，默认空字符串；不添加到工具输入，也不覆盖 `description`。
+
 ### 4.2 默认值
 
 | 字段或行为 | 默认值 |
@@ -175,6 +192,7 @@ TypeScript interface 用于说明；实际注册工具时使用 JSON Schema / Zo
 | `required` | `true` |
 | `allow_other` | 单选、多选和确认题为 `true`；文本题为 `false` |
 | Other 文案 | `Other`，按会话语言本地化 |
+| 用户补充说明 | 默认空字符串；提示为 `补充说明（可选）`，按会话语言本地化 |
 | 自定义输入 placeholder | `Type your answer...`，允许题目覆盖 |
 | 最大题数 | 5 |
 | 建议题数 | 通常 3 题，按实际需要减少或增加 |
@@ -224,13 +242,15 @@ TypeScript interface 用于说明；实际注册工具时使用 JSON Schema / Zo
 
 UI 自动为两道题追加 Other，模型无需显式传入 `allow_other: true`。
 
-## 5. Other 与答案校验
+## 5. Other、选项补充说明与答案校验
 
 ### 5.1 Other 行为
 
 `single_select`、`multi_select` 和 `confirm` 默认展示 Other；只有显式指定 `allow_other: false` 才隐藏。
 
-单选或确认题选中 Other 后，最终答案直接使用输入文本，不添加 `Other:` 前缀。例如，用户输入 `Podman`，答案即为 `Podman`。
+单选或确认题仍只允许选择一个选项，Other 与普通选项互斥。需要对普通选项补充描述时，直接填写该选项下方的补充说明。
+
+选中 Other 后，最终答案直接使用输入文本，不添加 `Other:` 前缀。例如，用户输入 `Podman`，答案即为 `Podman`。Other 使用自定义答案文本框，不再叠加一个补充说明框。
 
 多选题允许普通选项与 Other 同时选中。例如，用户选择 Web UI、Authentication，并在 Other 输入 Cloudflare Tunnel，最终答案为：
 
@@ -242,7 +262,25 @@ UI 自动为两道题追加 Other，模型无需显式传入 `allow_other: true`
 
 Other 未选中时，即使保留了输入草稿，也不进入最终答案。
 
-### 5.2 答案校验规则
+### 5.2 选项补充说明
+
+- 单选、多选和确认题的每个普通选项都提供补充说明；确认题包括 Yes 和 No。
+- 输入框位于对应选项下方；存在模型提供的 `description` 时，按“选项标题 → 只读说明 → 补充输入框”排列。
+- 输入默认空且始终可选，选中选项后才启用输入框；不自动填充或生成补充说明。
+- 提交时，将非空补充说明附在选项 label 后，格式为 `选项文字 — 补充说明`。
+- 补充说明为空或仅空白时，只回传选项 label，不附加分隔符。
+- 多选题逐项附加各自的说明，每个选项保持一条答案。
+- 取消选中后可保留当前卡片中的说明草稿，但不回传；重新选中可继续编辑。
+- `allow_other=false` 只隐藏 Other，不影响普通选项的补充说明。
+
+例如，选择 Docker 并填写部署要求后，回传：
+
+```text
+Q: Which deployment method do you prefer?
+A: Docker — 使用 Docker Compose，部署在 NAS 上
+```
+
+### 5.3 答案校验规则
 
 | 场景 | 行为 |
 | --- | --- |
@@ -253,6 +291,8 @@ Other 未选中时，即使保留了输入草稿，也不进入最终答案。
 | 可选题留空 | 允许提交，回传 `A: 未回答`，按会话语言本地化 |
 | 可选题选择了 Other | 仍须填写 Other 文本 |
 | 确认题选择 No | 算作有效答案，不将 `false` 或 `no` 误判为未回答 |
+| 普通选项已选中，补充说明为空 | 允许提交，补充说明不属于必填内容 |
+| 未选中选项仍有说明草稿 | 不回传该选项或其说明，也不视为题目已回答 |
 
 文本题和 Other 使用 `trim()` 后是否为空判断是否已填写。单选题只允许一个选择；多选题可同时选择多个普通选项和 Other。
 
@@ -261,7 +301,7 @@ Other 未选中时，即使保留了输入草稿，也不进入最终答案。
 ### 6.1 提交流程
 
 1. 校验必填题及 Other 输入。
-2. 将选项转换为人类可读答案。
+2. 将已选选项转换为人类可读答案，逐项附加非空补充说明。
 3. 生成 Q/A 文本。
 4. 调用 `sendAnswerMessage(message)`，通过 MCP Apps 的 `ui/message` 发送。
 5. ChatGPT 收到答案后，Assistant 继续原任务。
@@ -287,29 +327,33 @@ Other 未选中时，即使保留了输入草稿，也不进入最终答案。
 
 ```text
 Q: Where do you want to deploy this?
-A: Docker
+A: Docker — 使用 Docker Compose，部署在 NAS 上
 
 Q: Which features do you need?
 A:
-- Web UI
+- Web UI — 支持深色模式
 - Authentication
 - Cloudflare Tunnel
 ```
 
 消息不附加问卷 ID、版本号或其他协议字段，依靠当前聊天上下文理解答案。
 
+选择类题目只回传用户选中的 label、填写的补充说明及 Other 答案，不把模型提供的 `Option.description` 当作用户补充说明回传。文本题继续回传用户填写的文本。
+
 格式化伪代码：
 
 ```typescript
 const message = questions
   .map((question) => {
-    const answer = formatAnswer(question);
+    const answer = formatAnswer(question, answers[question.id]);
     return `Q: ${question.question}\nA: ${answer}`;
   })
   .join("\n\n");
 
 await sendAnswerMessage(message);
 ```
+
+`answers` 保存当前卡片的选择、各选项补充说明、Other 和文本题答案；`formatAnswer` 按第 5 节的规则格式化。
 
 `sendAnswerMessage` 封装 MCP Apps 标准 `ui/message`，将发送结果交给当前卡片的提交状态处理。
 
@@ -478,7 +522,7 @@ ask-user-question/
 | --- | --- | --- |
 | 0. 计划与约定 | 确定方案 A、整理 Markdown、初始化项目指令 | 文档检查通过并提交 |
 | 1. 最小闭环 | 一道单选题、标准 MCP Apps 桥接、停止等待及回传 | 真实 ChatGPT 中完成提问、回答、继续任务 |
-| 2. 完整问答 UI | 四种题型、Other、基本校验和提交保护 | 核心功能与边界用例通过 |
+| 2. 完整问答 UI | 四种题型、Other、选项补充说明、基本校验和提交保护 | 核心功能与边界用例通过 |
 | 3. 插件集成 | Skill、manifest、连接映射和完整安装 | 新对话中验证 skill、工具和 UI 一起工作 |
 | 4. 交付准备 | 稳定部署、文档、发布材料及完整验收 | 可安装、可部署、可验收，发布材料齐备 |
 
@@ -497,5 +541,8 @@ ask-user-question/
 | 7 | 重复点击、发送成功、发送失败或接口不可用 | 一次点击流程只发起一次发送；成功后禁用；失败保留输入并可手动重试；接口不可用时可复制 Q/A |
 | 8 | 用户直接打字回答或改变任务 | 使用文字答案继续；不强迫提交卡片；改变任务时按新消息处理 |
 | 9 | 按安装说明安装完整插件并新建对话 | Skill、工具和 UI 均可用，能够完整完成问答 |
+| 10 | 单选、多选及确认题填写选项补充说明 | 输入框位于选项下方且默认空；非空内容附在各自 label 后；单选和确认题仍只选一项 |
+| 11 | 补充说明留空、取消选中、重新选中或隐藏 Other | 空说明不阻止提交且不附分隔符；未选中说明不回传；重选可恢复草稿；隐藏 Other 不影响说明输入 |
+| 12 | 选项同时有模型 description 和用户补充说明 | 只读说明与输入分开展示，回传 label 和用户说明，不将模型 description 当成用户答案 |
 
 在 `docs/acceptance.md` 中记录实际环境、执行结果和未完成项；当前表格描述预期行为，不表示测试已执行。

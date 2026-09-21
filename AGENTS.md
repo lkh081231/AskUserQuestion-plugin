@@ -12,6 +12,7 @@
 - 使用一个 `ask_user_questions` 工具，支持单选、多选、文本和确认题。
 - 产品中的 Assistant 成功调用提问工具后直接结束本轮，等待用户通过 UI 或聊天文字回答。
 - 选择类题目默认由 UI 添加 Other，显式 `allow_other: false` 时隐藏。
+- 每个普通选项下方提供默认空的可选补充说明，提交时附在选项 label 后；与模型 `description` 分开。单选和确认题仍只选一项，Other 保持独立选项。
 - 回传人类可读的 Q/A 文本，不添加问卷关联 ID。
 - 状态和校验保持简单，不引入答案数据库、跨卡片同步或 agent suspend/resume。
 - 完整交付包括插件包、skill、MCP 服务、UI、安装部署文档及验收记录。

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ask-user-question",
+  "version": "0.1.0",
+  "description": "Ask focused clarification questions in an interactive chat card before consequential work begins.",
+  "author": {
+    "name": "Ask User Question contributors"
+  },
+  "keywords": [
+    "clarification",
+    "questions",
+    "planning",
+    "mcp-apps"
+  ],
+  "extensions": {
+    "com.openai": {
+      "apps": "./.app.json",
+      "interface": {
+        "displayName": "Ask User Question",
+        "shortDescription": "Clarify consequential choices before starting work",
+        "longDescription": "Collect focused single-select, multi-select, text, and confirmation answers in an interactive chat card, then continue the original task with the user's choices.",
+        "developerName": "Ask User Question contributors",
+        "category": "Productivity",
+        "capabilities": [
+          "Interactive"
+        ],
+        "defaultPrompt": [
+          "Plan my request and ask only the questions that materially affect the result.",
+          "Clarify scope and compatibility before implementing this feature.",
+          "Help me choose among important options before you start the work."
+        ],
+        "brandColor": "#10A37F",
+        "composerIcon": "./assets/icon.svg",
+        "logo": "./assets/logo.svg"
+      }
+    }
+  }
+}

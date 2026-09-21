@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ask User Questions"
+  short_description: "Clarify consequential choices before starting work"
+  default_prompt: "Use $ask-user-questions to identify and ask only the questions that materially affect my request."

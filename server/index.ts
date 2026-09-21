@@ -4,11 +4,13 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createQuestionServer } from "./app.js";
+import { normalizeAppOrigin } from "./config.js";
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const widgetPath = resolve(currentDirectory, "../ui/index.html");
 const widgetHtml = await readFile(widgetPath, "utf8");
 const port = Number(process.env.PORT ?? 8787);
+const appOrigin = normalizeAppOrigin(process.env.APP_ORIGIN);
 const mcpPath = "/mcp";
 
 const httpServer = createServer(async (request, response) => {
@@ -49,7 +51,7 @@ const httpServer = createServer(async (request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
 
-    const server = createQuestionServer(widgetHtml);
+    const server = createQuestionServer(widgetHtml, appOrigin);
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,

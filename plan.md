@@ -515,7 +515,7 @@ AskUserQuestionsApp
 
 ## 9. 规划目录
 
-以下是目标结构；当前仓库处于计划和项目约定初始化阶段。
+以下是当前实现结构概览；测试文件和构建配置未全部展开。
 
 ```text
 ask-user-question/
@@ -523,25 +523,24 @@ ask-user-question/
 ├── plan.md
 ├── plugin.json              # portable 插件清单
 ├── .app.json                # 已注册 ChatGPT MCP 连接的映射
+├── .codex-plugin/plugin.json # Codex compatibility manifest
 ├── assets/                  # 插件图标等展示资源
 ├── server/
+│   ├── app.ts
+│   ├── config.ts
 │   ├── index.ts
 │   ├── tools/
 │   │   └── askUserQuestions.ts
 │   └── schemas/
 │       └── questions.ts
-├── ui/
+├── ui/src/
 │   ├── App.tsx
-│   ├── components/
-│   │   ├── QuestionCard.tsx
-│   │   ├── SingleSelect.tsx
-│   │   ├── MultiSelect.tsx
-│   │   ├── TextQuestion.tsx
-│   │   ├── ConfirmQuestion.tsx
-│   │   └── OtherInput.tsx
+│   ├── copy.ts
+│   ├── types.ts
+│   ├── components/QuestionCard.tsx
 │   └── utils/
-│       ├── validation.ts
-│       └── formatAnswer.ts
+│       ├── answers.ts
+│       └── validation.ts
 ├── skills/
 │   └── ask-user-questions/
 │       └── SKILL.md
@@ -550,7 +549,12 @@ ask-user-question/
 │   ├── reference/openai/     # 已下载的官方文档、来源清单及限制摘要
 │   ├── deployment.md
 │   ├── installation.md
-│   └── acceptance.md
+│   ├── acceptance.md
+│   ├── publishing.md
+│   ├── privacy.md
+│   ├── support.md
+│   └── terms.md
+├── Dockerfile
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -585,7 +589,7 @@ ask-user-question/
 
 ### 10.4 README 必须包含的已知限制
 
-未来创建 `README.md` 时，增加“已知限制”章节，明确停止等待依赖模型遵循指令，并链接实际验收记录。建议说明文字：
+`README.md` 已包含“已知限制”章节，明确停止等待依赖模型遵循指令，并链接实际验收记录。采用的说明文字：
 
 > 本插件通过工具说明和 skill 请求 ChatGPT 在展示问题后结束本轮，等待你的回答。目前查阅的公开插件接口不提供强制停止当前模型生成的能力，因此模型仍可能追加回复或提前继续任务。自定义结束符不能消除这一限制。支持环境、实测结果和已知失败情况见验收记录；测试通过不代表所有对话均有停止保证。
 
@@ -604,6 +608,8 @@ ask-user-question/
 | 4. 交付准备 | 稳定部署、文档、发布材料及完整验收 | 可安装、可部署、可验收；README 披露停止限制，发布材料齐备 |
 
 单选题闭环验证是实施第一步，不替代完整插件交付。真实客户端验证尚未完成时，应明确记录，不将阶段标记为完成。
+
+截至 2026-09-21，阶段 0 已完成；阶段 2 的本地功能与边界测试已完成。阶段 1 已完成本地 MCP 闭环但未完成真实 ChatGPT 停止等待验收；阶段 3 已完成 skill 和包结构但缺少真实连接 ID 与完整安装；阶段 4 已完成可部署文件和文档，但稳定公网部署、法律/支持 URL、真实客户端验收和公开审核仍受外部环境阻塞。实际证据见[验收记录](docs/acceptance.md)。
 
 ## 12. MVP 验收
 

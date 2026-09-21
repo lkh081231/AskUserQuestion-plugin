@@ -26,6 +26,7 @@ export function createQuestionResult(input: AskUserQuestionsInput) {
 export function registerAskUserQuestions(
   server: McpServer,
   widgetHtml: string,
+  appOrigin?: string,
 ): void {
   registerAppResource(
     server,
@@ -42,6 +43,7 @@ export function registerAskUserQuestions(
             ui: {
               prefersBorder: false,
               csp: { connectDomains: [], resourceDomains: [] },
+              ...(appOrigin ? { domain: appOrigin } : {}),
             },
           },
         },

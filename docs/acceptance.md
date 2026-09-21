@@ -36,17 +36,20 @@
 
 ## 本地 MCP 协议烟雾测试
 
-在构建后运行 `npm start`，对 `http://localhost:8787/mcp` 执行以下检查：
+运行 `npm run accept:local` 后，脚本会构建项目、在随机本地端口启动服务，并通过 MCP SDK 的 Streamable HTTP 客户端执行以下检查。该命令可重复执行，结束时自动关闭服务：
 
 | 场景 | 结果 |
 | --- | --- |
 | `GET /` | 通过，返回 `Ask User Question MCP server` |
+| `OPTIONS /mcp` | 通过，返回 Streamable HTTP 客户端所需的 CORS 方法和请求头 |
 | MCP `initialize` | 通过 |
 | `tools/list` | 通过，发现 `ask_user_questions` 和 `_meta.ui.resourceUri` |
 | 单选题 `tools/call` | 通过，返回默认值、纯文本 fallback 和 `structuredContent` |
 | 四题型 `tools/call` | 通过，返回四种归一化问题 |
 | 重复 question ID | 通过拒绝，返回 MCP `isError: true` 和字段路径 |
 | `resources/read` | 通过，MIME 为 `text/html;profile=mcp-app` |
+
+最近执行：**2026-09-21（UTC）**，共 7 组协议检查通过。该工具不读取私有数据、不执行写操作且不访问公网，因此授权检查在本地验收中标记为不适用；`tools/list` 已验证对应安全注解为只读、非破坏、非开放世界。
 
 这是本地 Streamable HTTP 协议验证，不包括 `ui/initialize`、真实宿主中的 `ui/message` 或卡片视觉检查。
 

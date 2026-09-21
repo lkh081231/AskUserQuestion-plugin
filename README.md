@@ -44,8 +44,9 @@ APP_ORIGIN=https://questions.example.com PORT=8787 npm start
 | `npm run typecheck` | 检查 UI 和服务端 TypeScript |
 | `npm test` | 运行 Vitest / jsdom 测试 |
 | `npm run build` | 构建单文件 MCP UI 和服务端 JavaScript |
+| `npm run accept:local` | 构建并通过 Streamable HTTP 客户端执行本地 MCP 协议验收 |
 | `npm run validate:package` | 校验 portable manifest、compatibility manifest、skill、资产和连接映射结构 |
-| `npm run check` | 依次执行类型检查、测试、构建和包结构校验 |
+| `npm run check` | 依次执行类型检查、测试、构建、本地 MCP 协议验收和包结构校验 |
 | `npm run package:plugin` | 在 `dist/plugin/ask-user-question/` 生成可分发插件目录 |
 | `npm start` | 启动构建后的 Streamable HTTP MCP 服务 |
 

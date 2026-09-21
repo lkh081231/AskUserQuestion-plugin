@@ -12,10 +12,11 @@
     "test": "vitest run --config vitest.config.ts",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.server.json --noEmit",
+    "accept:local": "npm run build && node scripts/accept-local-mcp.mjs",
     "validate:package": "node scripts/validate-package.mjs",
     "package:plugin": "npm run validate:package && node scripts/package-plugin.mjs",
     "check:docs": "node scripts/check-docs.mjs",
-    "check": "npm run typecheck && npm test && npm run build && npm run validate:package && npm run check:docs"
+    "check": "npm run typecheck && npm test && npm run build && node scripts/accept-local-mcp.mjs && npm run validate:package && npm run check:docs"
   },
   "engines": {
     "node": ">=22"

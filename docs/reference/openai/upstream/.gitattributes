@@ -1,0 +1,2 @@
+# Preserve official source bytes; verify integrity using ../manifest.json.
+* -whitespace

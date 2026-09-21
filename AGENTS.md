@@ -4,7 +4,7 @@
 
 本仓库用于开发 ChatGPT Ask User Question 插件。产品目标、接口和验收要求以 [plan.md](plan.md) 为准。
 
-当前处于文档初始化阶段，尚无应用代码、依赖清单或构建脚本。计划中的目录不是已实现功能；新增代码后同步更新这里的开发和验证说明。
+仓库已包含 TypeScript MCP 服务、React MCP Apps UI、测试和构建脚本。功能范围与完成状态仍以 `plan.md` 和 `docs/acceptance.md` 为准；本地测试不能替代真实 ChatGPT 验收。
 
 ## 已确定的设计
 
@@ -36,6 +36,9 @@
 - `docs/reference/openai/upstream/` 中的官方 Markdown 原文保留原始字节，不套用本地排版规则；通过 `manifest.json` 校验文件数、大小和 SHA-256。本地索引与限制摘要仍按项目规范检查。
 - 新增应用代码后，执行仓库实际提供的相关检查；不要假定尚不存在的 npm 脚本可运行。
 - 新增构建与测试脚本时，将准确命令补充到本文和 README。
+- 安装依赖使用 `npm install`；完整本地检查使用 `npm run check`。
+- 单独执行时使用 `npm run typecheck`、`npm test` 和 `npm run build`。
+- 构建后使用 `npm start` 启动 Streamable HTTP 服务，默认端点为 `http://localhost:8787/mcp`；可通过 `PORT` 覆盖端口。
 - 真实 ChatGPT 验收与本地测试分别记录；未执行的验证必须明确注明。
 - 创建 README 时必须增加“已知限制”：停止行为依赖模型指令遵循、没有已确认的公开强制停止接口、结束符不能保证停止；注明核对日期并链接实际验收结果。不得将其宣传为强制暂停。
 - 停止行为验收须记录环境、执行次数和失败样例；单次成功或本地测试通过不能代表所有对话都有保证。

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ask User Question · UI 方向预览</title>
+  <style>
+    :root { color-scheme: light; font-family: "Noto Sans SC", system-ui, sans-serif; color: #242424; background: #f8f8f7; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 44px 36px; }
+    main { max-width: 1440px; margin: auto; }
+    h1 { margin: 10px 0 12px; font-size: 30px; font-weight: 550; letter-spacing: -.8px; }
+    .eyebrow { margin: 0; color: #777; font-size: 11px; letter-spacing: 2px; }
+    .intro { margin: 0; color: #777; font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 36px; }
+    h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-size: 18px; font-weight: 550; }
+    h2 span { color: #828282; font-size: 13px; font-weight: 400; }
+    .description { margin: 0 0 24px; font-size: 13px; color: #777; }
+    .stage-label { margin: 18px 0 10px; color: #8b8b8b; font-size: 11px; letter-spacing: 1px; }
+    .live { min-height: 364px; }
+    .card { margin: 0; padding: 20px; border: 1px solid #dedede; border-radius: 18px; background: #fff; box-shadow: 0 3px 12px #00000003; }
+    .question { margin: 0 0 15px; font-size: 15px; font-weight: 500; line-height: 1.7; }
+    .option { border-bottom: 1px solid #e8e8e8; }
+    .option:last-child { border-bottom: 0; }
+    .choice { position: relative; display: flex; gap: 12px; align-items: center; min-height: 49px; padding: 7px 0; cursor: pointer; }
+    .choice:hover { background: #f8f8f8; }
+    .choice input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .choice:has(input:focus-visible) { outline: 2px solid #555; outline-offset: 2px; border-radius: 7px; }
+    .badge { flex: 0 0 30px; height: 30px; display: grid; place-items: center; background: #f3f3f3; border-radius: 9px; font-size: 14px; color: #929292; }
+    .label { flex: 1; font-size: 14px; color: #626262; }
+    .check { width: 16px; color: #303030; font-size: 14px; visibility: hidden; }
+    .option.selected .check { visibility: visible; }
+    .option.selected .label { color: #252525; }
+    .detail { display: none; margin: 0 0 10px 42px; }
+    .option.selected .detail { display: block; }
+    textarea { display: block; width: 100%; min-height: 38px; height: 38px; resize: vertical; border: 1px solid #dedede; border-radius: 8px; padding: 9px 10px; font: inherit; font-size: 12px; color: #444; background: #fff; }
+    textarea::placeholder { color: #a2a2a2; }
+    textarea:focus { outline: 1px solid #808080; }
+    .footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 17px; }
+    .hint { font-size: 10px; line-height: 1.6; color: #999; }
+    button { cursor: pointer; font: inherit; }
+    .submit { flex-shrink: 0; padding: 7px 14px; border: 1px solid #dedede; border-radius: 8px; background: white; color: #262626; font-size: 13px; box-shadow: 0 1px 2px #00000008; }
+    .submit:hover { background: #f3f3f3; }
+    .summary { border: 1px solid #e1e1e1; border-radius: 15px; padding: 16px 18px; background: #fff; }
+    .summary p { margin: 0; font-size: 14px; line-height: 1.85; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .summary .summary-question { color: #858585; font-size: 13px; }
+    .reset { margin-top: 12px; padding: 0; background: none; border: none; color: #888; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+    .error { color: #a1372f; font-size: 12px; }
+    .b .option { border: 0; border-radius: 10px; margin: 2px -8px; padding: 0 8px; }
+    .b .option.selected { background: #f4f4f4; }
+    .b .option.selected .badge { background: #292929; color: white; }
+    .b .choice:hover { background: transparent; }
+    .b .detail { padding-bottom: 10px; margin-bottom: 0; }
+    .b .submit { background: #292929; border-color: #292929; color: white; }
+    .c .card { padding: 16px 18px; border-radius: 14px; }
+    .c .question { margin-bottom: 8px; }
+    .c .choice { min-height: 43px; gap: 10px; }
+    .c .badge { width: 23px; flex-basis: 23px; height: 23px; border-radius: 6px; font-size: 12px; }
+    .c .detail { margin-left: 33px; }
+    .c .footer { margin-top: 12px; }
+    .c .summary { padding: 12px 16px; border-radius: 12px; }
+    .footnote { margin-top: 30px; padding-top: 18px; border-top: 1px solid #e2e2e2; color: #8b8b8b; font-size: 12px; line-height: 1.8; }
+    @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; max-width: 700px; } .live { min-height: 0; } article { margin-bottom: 22px; } }
+    @media (max-width: 480px) { body { padding: 24px 16px; } h1 { font-size: 24px; } .card { padding: 16px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">ASK USER QUESTION / DESIGN PREVIEW</p>
+    <h1>更轻的提问，回答后自然收起。</h1>
+    <p class="intro">三种方向 · 可点击选项、填写详情、按 Enter 提交，体验收起效果。</p>
+    <div class="grid" id="previews"></div>
+    <p class="footnote">交互原型，仅在本页演示，不发送聊天消息。输入详情后 Enter 提交，Shift + Enter 换行；中文输入法选字不会触发提交。</p>
+  </main>
+  <script>
+    const question = '你想测试哪种类型的问题？';
+    const variants = [
+      { id: 'a', title: 'A · 经典分隔线', tag: '推荐', description: '最接近参考图，轻边框、编号、细分隔线。' },
+      { id: 'b', title: 'B · 柔和高亮', tag: '', description: '选中项浅灰铺底，当前位置更容易辨认。' },
+      { id: 'c', title: 'C · 紧凑列表', tag: '', description: '缩小间距和编号，适合一张卡片包含多题。' },
+    ];
+    const options = ['单选', '多选', '文本', '其他'];
+    function summary(answer) {
+      const result = document.createElement('div');
+      result.className = 'summary';
+      const prompt = document.createElement('p');
+      prompt.className = 'summary-question';
+      prompt.textContent = question;
+      const response = document.createElement('p');
+      response.textContent = answer;
+      result.append(prompt, response);
+      return result;
+    }
+    variants.forEach(variant => {
+      const article = document.createElement('article');
+      article.className = variant.id;
+      article.innerHTML = `<h2>${variant.title}<span>${variant.tag}</span></h2><p class="description">${variant.description}</p><p class="stage-label">填写中</p><div class="live"></div><p class="stage-label">提交后 · 只保留问答</p>`;
+      article.append(summary('多选 — 想一次选择多个答案'));
+      document.getElementById('previews').append(article);
+      const live = article.querySelector('.live');
+      function renderForm() {
+        live.innerHTML = `<form class="card" aria-label="${variant.title}"><p class="question">${question}</p><div class="options">${options.map((label, i) => `<div class="option ${i === 1 ? 'selected' : ''}"><label class="choice"><input type="radio" name="${variant.id}" value="${i}" ${i === 1 ? 'checked' : ''}><span class="badge" aria-hidden="true">${i === 3 ? '↗' : i + 1}</span><span class="label">${label}</span><span class="check" aria-hidden="true">✓</span></label><div class="detail"><textarea aria-label="${label}详情" placeholder="${i === 3 ? '输入你的答案…' : '补充详情（可选）…'}">${i === 1 ? '想一次选择多个答案' : ''}</textarea></div></div>`).join('')}</div><p class="error" role="alert" hidden></p><div class="footer"><span class="hint">Enter 提交 · Shift + Enter 换行</span><button class="submit" type="submit">提交 <span aria-hidden="true">↵</span></button></div></form>`;
+        const form = live.querySelector('form');
+        form.addEventListener('change', event => {
+          if (event.target.type !== 'radio') return;
+          form.querySelectorAll('.option').forEach(row => row.classList.toggle('selected', row.querySelector('input').checked));
+          form.querySelector('.error').hidden = true;
+        });
+        form.addEventListener('input', () => { form.querySelector('.error').hidden = true; });
+        let composing = false;
+        let compositionEnded = 0;
+        form.addEventListener('compositionstart', () => { composing = true; });
+        form.addEventListener('compositionend', () => { composing = false; compositionEnded = Date.now(); });
+        form.addEventListener('keydown', event => {
+          if (event.target.tagName === 'TEXTAREA' && event.key === 'Enter' && !event.shiftKey && !event.isComposing && !composing && event.keyCode !== 229 && Date.now() - compositionEnded > 100) {
+            event.preventDefault();
+            form.requestSubmit();
+          }
+        });
+        form.addEventListener('submit', event => {
+          event.preventDefault();
+          const selected = form.querySelector('input:checked');
+          const note = selected.closest('.option').querySelector('textarea').value.trim();
+          if (selected.value === '3' && !note) {
+            const error = form.querySelector('.error');
+            error.textContent = '请填写你的答案。';
+            error.hidden = false;
+            selected.closest('.option').querySelector('textarea').focus();
+            return;
+          }
+          const answer = selected.value === '3' ? note : options[Number(selected.value)] + (note ? ' — ' + note : '');
+          live.replaceChildren(summary(answer));
+          const reset = document.createElement('button');
+          reset.type = 'button';
+          reset.className = 'reset';
+          reset.textContent = '重新体验预览';
+          reset.addEventListener('click', renderForm);
+          live.append(reset);
+        });
+      }
+      renderForm();
+    });
+  </script>
+</body>
+</html>

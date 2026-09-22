@@ -10,6 +10,8 @@ Ask User Question 是一个 ChatGPT / Codex 插件：当目标、范围、约束
 
 以下步骤仍未完成：部署到稳定公网 HTTPS、写入真实 `plugin_asdk_app...` ID、安装包含 skill 的完整插件，以及按模型和提示统计停止等待行为。因此当前 `.app.json` 的 `apps` 映射仍为空，Tunnel 功能验收不能视为公开部署、完整插件安装或停止行为保证。详情见[验收记录](docs/acceptance.md)。
 
+2026-09-22 用户已确认 B 版 UI 预览：固定在输入框上方、多题分页、Enter 前进/提交和提交后问答摘要。正式改造尚未开始，由后续 5.6 sol 按 [实施计划](plan.md#31-布局与操作)及 [TODO](TODO.md) 执行；宿主输入框绑定能力须先核验，不能由独立网页预览推定支持。
+
 ## 功能
 
 - 一个 `ask_user_questions` MCP 工具，一次支持 1–5 题。

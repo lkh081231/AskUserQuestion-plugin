@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>B 方案 · 对话流预览</title>
+  <style>
+    :root { color-scheme: light; font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #292929; background: #fcfcfb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; opacity: .5; }
+    button:focus-visible, a:focus-visible { outline: 2px solid #777; outline-offset: 3px; }
+    [hidden] { display: none !important; }
+    .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 3; min-height: 64px; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: #fcfcfb; border-bottom: 1px solid #efefed; }
+    h1 { margin: 0; font-size: 15px; font-weight: 550; }
+    .subtitle { color: #999; font-size: 11px; margin-left: 12px; font-weight: 400; }
+    .tools { display: flex; align-items: center; gap: 8px; }
+    .tools button, .tools a { border: 0; background: transparent; padding: 7px 9px; border-radius: 7px; color: #777; font-size: 12px; text-decoration: none; white-space: nowrap; }
+    .tools button:hover, .tools a:hover { background: #f0f0ee; }
+    .thread { width: min(100% - 40px, 780px); margin: auto; padding: 108px 0 210px; }
+    .date { text-align: center; font-size: 11px; color: #aaa; margin: 0 0 40px; }
+    .message { margin: 0 0 34px; font-size: 15px; line-height: 1.95; overflow-wrap: anywhere; }
+    .user { display: flex; justify-content: flex-end; }
+    .bubble { max-width: 85%; padding: 11px 19px; background: #efefed; border-radius: 20px 20px 5px 20px; white-space: pre-wrap; }
+    .assistant p { margin: 0 0 14px; }
+    .assistant ol { padding-left: 22px; margin: 10px 0 20px; }
+    .assistant li { margin-bottom: 10px; }
+    .byline { color: #a0a09c; font-size: 11px; margin-bottom: 12px; letter-spacing: .4px; }
+    .past-summary { border: 1px solid #e4e4e0; border-radius: 14px; padding: 15px 19px; margin-top: 20px; }
+    .past-summary p { margin: 0; }
+    .summary-question { color: #888; font-size: 13px; line-height: 1.8; }
+    .summary-answer { font-size: 15px; line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; }
+    #question-anchor { scroll-margin-top: 88px; }
+    .question-card { border: 1px solid #dededb; border-radius: 18px; padding: 21px 24px 18px; background: white; box-shadow: 0 3px 16px #00000003; }
+    .question-title { font-size: 16px; font-weight: 500; margin: 0 0 4px; line-height: 1.7; }
+    .question-description { font-size: 12px; color: #949490; margin: 0 0 16px; }
+    .option { border-radius: 11px; margin: 3px -8px; padding: 0 8px; }
+    .option:has(input:checked) { background: #f3f3f2; }
+    .choice { display: flex; align-items: center; gap: 13px; min-height: 53px; position: relative; cursor: pointer; padding: 8px 0; border-radius: 9px; }
+    .option:hover { background: #f7f7f5; }
+    .option:has(input:checked):hover { background: #f3f3f2; }
+    .choice input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .choice:has(input:focus-visible) { outline: 2px solid #777; outline-offset: 3px; }
+    .badge { flex: 0 0 31px; height: 31px; display: grid; place-items: center; border-radius: 9px; background: #f0f0ef; font-size: 14px; color: #999; }
+    input:checked + .badge { background: #2b2b2b; color: white; }
+    .option-label { flex: 1; color: #555; font-size: 15px; }
+    .tick { visibility: hidden; padding: 0 8px; font-size: 15px; }
+    input:checked ~ .tick { visibility: visible; }
+    .detail { display: none; padding: 0 0 12px 44px; }
+    .option:has(input:checked) .detail { display: block; }
+    .detail textarea { display: block; width: 100%; min-height: 42px; height: 42px; max-height: 150px; resize: vertical; border: 1px solid #dededb; border-radius: 8px; background: white; padding: 10px 12px; color: #333; font-size: 13px; line-height: 1.6; }
+    textarea:focus { outline: 1px solid #888; }
+    textarea::placeholder { color: #aaa; }
+    .form-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 17px; }
+    .hint { font-size: 11px; color: #aaa; line-height: 1.7; }
+    .submit { border: 0; border-radius: 9px; padding: 9px 17px; background: #292929; color: white; font-size: 13px; min-width: 78px; }
+    .submit:hover { background: #444; }
+    .error { margin: 12px 0 0; font-size: 12px; color: #a3352d; }
+    .submitted { border: 1px solid #e1e1dd; border-radius: 15px; padding: 17px 20px; background: transparent; }
+    .submitted p { margin: 0; }
+    .arrival { animation: arrive .22s ease-out; }
+    @keyframes arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .composer-dock { position: fixed; bottom: 0; left: 0; right: 0; z-index: 2; padding: 25px 20px max(16px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, #fcfcfb 18px); }
+    .composer { max-width: 780px; margin: 0 auto; border: 1px solid #dededb; border-radius: 22px; padding: 13px 14px 11px 19px; background: white; box-shadow: 0 4px 20px #00000004; display: flex; align-items: flex-end; gap: 12px; }
+    .composer textarea { flex: 1; min-width: 0; height: 49px; max-height: 120px; border: 0; padding: 8px 0; font-size: 15px; background: transparent; resize: none; color: #333; line-height: 1.7; }
+    .composer textarea:focus { outline: none; }
+    .composer:focus-within { border-color: #aaa; }
+    .send { flex: 0 0 34px; height: 34px; border: 0; border-radius: 50%; background: #292929; color: white; font-size: 22px; margin-bottom: 3px; }
+    .demo-note { margin: 9px 0 0; text-align: center; font-size: 10px; color: #a6a6a0; }
+    .latest { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); width: 34px; height: 34px; border-radius: 50%; border: 1px solid #ddd; background: white; box-shadow: 0 2px 8px #00000006; font-size: 19px; color: #777; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    @media (max-width: 600px) {
+      .topbar { padding: 12px 16px; min-height: 84px; align-items: flex-start; flex-direction: column; gap: 4px; }
+      .subtitle { font-size: 10px; }
+      .tools { gap: 2px; }
+      .tools button, .tools a { padding: 5px 8px; font-size: 11px; }
+      .thread { width: calc(100% - 32px); padding-top: 116px; padding-bottom: 192px; }
+      .question-card { padding: 18px 16px 16px; }
+      .message { font-size: 14px; }
+      .question-title { font-size: 15px; }
+      .hint { font-size: 10px; }
+      .composer-dock { padding-left: 12px; padding-right: 12px; }
+      .bubble { max-width: 93%; }
+      #question-anchor { scroll-margin-top: 108px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .arrival { animation: none; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>B · 柔和高亮<span class="subtitle">完整对话流预览</span></h1>
+    <nav class="tools" aria-label="预览控制">
+      <button id="history" type="button">查看上文 ↑</button>
+      <button id="question-link" type="button">回到问题</button>
+      <button id="reset" type="button">重新体验</button>
+      <a href="ui-directions.html">三版对比 ↗</a>
+    </nav>
+  </header>
+  <main class="thread" aria-label="模拟聊天记录">
+    <p class="date">今天 · 网站设计讨论</p>
+    <section class="message user" aria-label="用户"><div class="bubble">想做一个个人作品集网站，放设计项目和一些摄影作品。</div></section>
+    <section class="message assistant" aria-label="模拟助手">
+      <div class="byline">Assistant</div>
+      <p>可以。先整理网站的内容结构，再确定视觉风格。</p>
+      <p>你提供的内容适合分成三个部分：</p>
+      <ol><li>首页：简短介绍你是谁，以及你擅长做什么。</li><li>精选作品：以大图展示项目，点开后查看过程和成果。</li><li>关于与联系：介绍背景，提供合作联系方式。</li></ol>
+      <p>首页可以保留留白，让作品本身成为重点。摄影作品与设计项目可以放在同一个列表里，也可以按类别筛选。</p>
+    </section>
+    <section class="message user" aria-label="用户"><div class="bubble">主要给潜在客户看，希望简洁一些，手机上也能舒服地浏览。</div></section>
+    <section class="message assistant" aria-label="模拟助手">
+      <div class="byline">Assistant</div>
+      <p>明白。重点是让客户快速看到代表作，并方便地联系你。移动端会优先照顾图片比例、文字阅读和点击区域。</p>
+      <div class="past-summary"><p class="summary-question">这个网站主要面向谁？</p><p class="summary-answer">潜在客户 — 简洁，适合手机浏览</p></div>
+    </section>
+    <section class="message user" aria-label="用户"><div class="bubble">对，可以先看看视觉方向。</div></section>
+    <section class="message assistant" aria-label="模拟助手"><div class="byline">Assistant</div><p>先确定一个整体方向。你可以选择下面的选项，也可以补充你喜欢的细节。</p></section>
+    <section id="question-anchor" class="message" aria-label="提问卡片"></section>
+    <div id="continuation"></div>
+  </main>
+  <footer class="composer-dock">
+    <button class="latest" type="button" aria-label="回到最新消息" hidden>↓</button>
+    <form class="composer" aria-label="模拟聊天输入">
+      <textarea id="chat-input" aria-label="聊天消息" placeholder="也可以直接回复…" rows="1"></textarea>
+      <button class="send" type="submit" aria-label="发送消息">↑</button>
+    </form>
+    <p class="demo-note">本地交互演示 · 回复为预设内容，不连接真实助手 · Enter 发送 / Shift + Enter 换行</p>
+  </footer>
+  <div class="sr-only" role="status" id="announcement"></div>
+  <script>
+    const prompt = '你希望作品集呈现哪种视觉风格？';
+    const labels = ['极简留白', '杂志排版', '深色沉浸', '其他'];
+    const anchor = document.getElementById('question-anchor');
+    const continuation = document.getElementById('continuation');
+    const composer = document.querySelector('.composer');
+    const chatInput = document.getElementById('chat-input');
+    let submitted = false;
+    const behavior = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+    function latest(smooth = true) { window.scrollTo({top: document.documentElement.scrollHeight, behavior: smooth ? behavior() : 'instant'}); }
+    function updateScrollButton() { document.querySelector('.latest').hidden = document.documentElement.scrollHeight - innerHeight - scrollY < 100; }
+    window.addEventListener('scroll', updateScrollButton, {passive:true});
+    window.addEventListener('resize', updateScrollButton);
+    document.querySelector('.latest').addEventListener('click', () => latest());
+    document.getElementById('history').addEventListener('click', () => window.scrollTo({top:0,behavior:behavior()}));
+    document.getElementById('question-link').addEventListener('click', () => anchor.scrollIntoView({block:'start',behavior:behavior()}));
+    function keyboardSubmit(form) {
+      let composing = false;
+      let ended = 0;
+      form.addEventListener('compositionstart', () => { composing = true; });
+      form.addEventListener('compositionend', () => { composing = false; ended = Date.now(); });
+      form.addEventListener('keydown', event => {
+        if (event.target.tagName === 'TEXTAREA' && event.key === 'Enter' && !event.shiftKey && !event.isComposing && !composing && event.keyCode !== 229 && Date.now() - ended > 100) {
+          event.preventDefault(); form.requestSubmit();
+        }
+      });
+    }
+    function addMessage(role, text) {
+      const message = document.createElement('section');
+      message.className = `message ${role} arrival`;
+      message.setAttribute('aria-label', role === 'user' ? '用户' : '模拟助手');
+      const content = document.createElement('div');
+      content.className = role === 'user' ? 'bubble' : 'reply';
+      content.style.whiteSpace = 'pre-wrap';
+      content.textContent = text;
+      if (role === 'assistant') {
+        const name = document.createElement('div'); name.className = 'byline'; name.textContent = 'Assistant'; message.append(name);
+      }
+      message.append(content); continuation.append(message);
+    }
+    function collapse(answer) {
+      if (submitted) return;
+      submitted = true;
+      const summary = document.createElement('div'); summary.className = 'submitted arrival';
+      const question = document.createElement('p'); question.className = 'summary-question'; question.textContent = prompt;
+      const response = document.createElement('p'); response.className = 'summary-answer'; response.textContent = answer;
+      summary.append(question, response); anchor.replaceChildren(summary);
+      document.getElementById('announcement').textContent = '答案已提交，提问卡片已收起为问答摘要。';
+    }
+    function reply(first) {
+      addMessage('assistant', first
+        ? '收到，我会按你刚才的方向继续。\n\n接下来会先展示首页的布局：上方放简短介绍，中间展示精选作品，底部留出联系入口。手机上调整为单列，方便连续浏览。'
+        : '这条补充已加入预览对话。你可以继续输入消息，或向上滚动查看之前的问答。');
+      chatInput.placeholder = '继续讨论…';
+      chatInput.focus({preventScroll:true});
+      requestAnimationFrame(() => latest());
+    }
+    function renderQuestion() {
+      submitted = false; continuation.replaceChildren(); chatInput.value = ''; chatInput.placeholder = '也可以直接回复…';
+      document.getElementById('announcement').textContent = '';
+      anchor.innerHTML = `<form class="question-card" aria-label="视觉风格提问"><h2 class="question-title">${prompt}</h2><p class="question-description">选择一项，可补充详情。</p>${labels.map((label,i)=>`<div class="option"><label class="choice"><input type="radio" name="style" value="${i}"><span class="badge" aria-hidden="true">${i===3?'↗':i+1}</span><span class="option-label">${label}</span><span class="tick" aria-hidden="true">✓</span></label><div class="detail"><textarea aria-label="${label}详情" placeholder="${i===3?'描述你想要的风格…':'补充详情（可选）…'}"></textarea></div></div>`).join('')}<p class="error" role="alert" hidden></p><div class="form-footer"><span class="hint">Enter 提交 · Shift + Enter 换行</span><button class="submit" type="submit">提交 ↵</button></div></form>`;
+      const form = anchor.querySelector('form');
+      const error = form.querySelector('.error');
+      form.addEventListener('input', () => { error.hidden = true; });
+      form.addEventListener('change', event => {
+        if (event.target.type === 'radio' && event.target.value === '3') event.target.closest('.option').querySelector('textarea').focus();
+      });
+      keyboardSubmit(form);
+      form.addEventListener('submit', event => {
+        event.preventDefault(); if (submitted) return;
+        const selected = form.querySelector('input:checked');
+        if (!selected) { error.textContent = '请先选择一个方向。'; error.hidden = false; form.querySelector('input').focus(); return; }
+        const noteInput = selected.closest('.option').querySelector('textarea');
+        const note = noteInput.value.trim();
+        if (selected.value === '3' && !note) { error.textContent = '请描述你想要的风格。'; error.hidden = false; noteInput.focus(); return; }
+        const answer = selected.value === '3' ? note : labels[Number(selected.value)] + (note ? ' — ' + note : '');
+        collapse(answer); reply(true);
+      });
+      requestAnimationFrame(() => latest(false));
+    }
+    keyboardSubmit(composer);
+    composer.addEventListener('submit', event => {
+      event.preventDefault(); const text = chatInput.value.trim(); if (!text) return;
+      const first = !submitted;
+      if (first) collapse(text);
+      addMessage('user', text); chatInput.value = ''; reply(first);
+    });
+    document.getElementById('reset').addEventListener('click', renderQuestion);
+    renderQuestion();
+  </script>
+</body>
+</html>

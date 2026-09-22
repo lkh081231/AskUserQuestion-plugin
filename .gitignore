@@ -3,3 +3,5 @@ dist/
 .env
 .env.*
 *.log
+deploy/systemd/tunnel.env
+deploy/systemd/control-plane-api-key

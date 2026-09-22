@@ -17,6 +17,7 @@
 | 变量 | 必需性 | 说明 |
 | --- | --- | --- |
 | `PORT` | 可选 | HTTP 监听端口，默认 `8787` |
+| `MCP_LISTEN_HOST` | 可选 | 监听地址，默认 `127.0.0.1`；容器镜像显式使用 `0.0.0.0` |
 | `APP_ORIGIN` | 生产必需 | 仅接受不带路径、查询或凭据的 HTTPS origin，例如 `https://questions.example.com` |
 
 `APP_ORIGIN` 会写入 MCP UI 资源的 `_meta.ui.domain`。未设置时适合本地测试；公开提交带 UI 的插件前必须设置，并为本插件使用独立 origin。
@@ -49,6 +50,10 @@ docker run --rm \
 ```
 
 镜像使用多阶段构建。运行阶段只安装 MCP 服务所需的生产依赖，并以非 root `node` 用户启动。
+
+## Secure MCP Tunnel
+
+私有 MCP 的长期运行采用 user systemd，完整安装、密钥注入、健康检查和更新步骤见 [Secure MCP Tunnel 常态化部署](tunnel-deployment.md)。
 
 ## 反向代理与网络
 
@@ -104,4 +109,4 @@ curl -fsS \
 
 ## 当前未执行项
 
-截至 2026-09-21，本仓库没有云账号、域名或部署凭据，因此没有执行公网部署。Dockerfile 和步骤属于可部署交付，不是已上线证明；实际 URL、平台、区域、镜像摘要和部署时间应补记到[验收记录](acceptance.md)。
+截至 2026-09-22，Secure MCP Tunnel 已完成功能验收，user systemd MCP 服务已部署；Tunnel 常驻服务仍需本机注入 Runtime API Key credential 后启动。仓库仍没有云账号、域名或公网部署凭据，因此没有执行公开 HTTPS 部署。Dockerfile 和公网步骤属于可部署交付，不是已上线证明；实际 URL、平台、区域、镜像摘要和部署时间应补记到[验收记录](acceptance.md)。

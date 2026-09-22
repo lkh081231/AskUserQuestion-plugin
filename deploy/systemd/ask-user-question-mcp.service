@@ -1,0 +1,27 @@
+[Unit]
+Description=Ask User Question MCP server
+Documentation=https://github.com/lkh081231/AskUserQuestion-plugin
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/AskUserQuestion-plugin
+Environment=NODE_ENV=production
+Environment=NODE_VERSION=default
+Environment=PORT=8787
+Environment=MCP_LISTEN_HOST=127.0.0.1
+ExecStart=%h/.nvm/nvm-exec node dist/server/index.js
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=15s
+KillSignal=SIGTERM
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+LockPersonality=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=default.target

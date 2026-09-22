@@ -41,6 +41,7 @@
 - 使用 `npm run accept:local` 构建并执行可重复的本地 Streamable HTTP MCP 验收。
 - 构建后使用 `npm start` 启动 Streamable HTTP 服务，默认端点为 `http://localhost:8787/mcp`；可通过 `PORT` 覆盖端口。
 - 使用 `npm run validate:package` 校验插件结构，使用 `npm run package:plugin` 生成 `dist/plugin/ask-user-question/`。
+- 修改 systemd 单元后使用 `systemd-analyze --user verify deploy/systemd/*.service` 校验。
 - 生产设置 `APP_ORIGIN` 为独立 HTTPS origin；Docker 构建使用 `docker build -t ask-user-question:0.1.0 .`。
 - 真实 ChatGPT 验收与本地测试分别记录；未执行的验证必须明确注明。
 - 创建 README 时必须增加“已知限制”：停止行为依赖模型指令遵循、没有已确认的公开强制停止接口、结束符不能保证停止；注明核对日期并链接实际验收结果。不得将其宣传为强制暂停。

@@ -10,6 +10,7 @@ RUN npm run build
 FROM node:24-alpine AS runtime
 ENV NODE_ENV=production
 ENV PORT=8787
+ENV MCP_LISTEN_HOST=0.0.0.0
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force

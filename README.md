@@ -6,9 +6,9 @@ Ask User Question 是一个 ChatGPT / Codex 插件：当目标、范围、约束
 
 ## 当前状态
 
-本地实现已经完成：MCP 服务、四种题型 UI、校验与失败兜底、配套 skill、portable/compatibility manifest、容器构建文件和交付文档均已提供。类型检查、27 个自动化测试、本地 MCP 协议烟雾测试、Docker 运行、skill 校验和插件结构校验已通过。
+本地实现已经完成：MCP 服务、四种题型 UI、校验与失败兜底、配套 skill、portable/compatibility manifest、容器构建文件和交付文档均已提供。类型检查、30 个自动化测试、本地 MCP 协议烟雾测试、Docker 运行、skill 校验和插件结构校验已通过。Secure MCP Tunnel 已在 ChatGPT 开发者模式完成工具发现、四题型卡片展示及 `ui/message` 答案回传验证。
 
-以下外部步骤尚未执行：部署到稳定公网 HTTPS、在 ChatGPT 开发者模式注册连接、写入真实 `plugin_asdk_app...` ID、安装完整插件并进行真实会话验收。因此当前 `.app.json` 的 `apps` 映射为空，不能据此声称插件已经在 ChatGPT 中完成安装或停止行为验收。详情见[验收记录](docs/acceptance.md)。
+以下步骤仍未完成：部署到稳定公网 HTTPS、写入真实 `plugin_asdk_app...` ID、安装包含 skill 的完整插件，以及按模型和提示统计停止等待行为。因此当前 `.app.json` 的 `apps` 映射仍为空，Tunnel 功能验收不能视为公开部署、完整插件安装或停止行为保证。详情见[验收记录](docs/acceptance.md)。
 
 ## 功能
 
@@ -31,7 +31,7 @@ npm run check
 npm start
 ```
 
-默认健康检查地址为 `http://localhost:8787/`，MCP 端点为 `http://localhost:8787/mcp`。开发模式下可不设置 `APP_ORIGIN`；生产和提交审核时必须设置为部署 UI 的独立 HTTPS origin。
+默认仅监听 loopback，健康检查地址为 `http://127.0.0.1:8787/`，MCP 端点为 `http://127.0.0.1:8787/mcp`。需要从容器或反向代理访问时显式设置 `MCP_LISTEN_HOST=0.0.0.0`。开发模式下可不设置 `APP_ORIGIN`；生产和提交审核时必须设置为部署 UI 的独立 HTTPS origin。
 
 ```bash
 APP_ORIGIN=https://questions.example.com PORT=8787 npm start
@@ -70,6 +70,7 @@ APP_ORIGIN=https://questions.example.com PORT=8787 npm start
 ## 安装与部署
 
 - [部署 MCP 服务](docs/deployment.md)
+- [Secure MCP Tunnel 常态化部署](docs/tunnel-deployment.md)
 - [注册连接并安装插件](docs/installation.md)
 - [公开发布材料与检查清单](docs/publishing.md)
 - [验收记录](docs/acceptance.md)
@@ -78,7 +79,7 @@ APP_ORIGIN=https://questions.example.com PORT=8787 npm start
 
 ## 已知限制
 
-能力核对日期：**2026-09-21**。
+能力核对日期：**2026-09-22**。
 
 本插件通过工具说明和 skill 请求 ChatGPT 在展示问题后结束本轮，等待你的回答。目前查阅的公开插件接口不提供强制停止当前模型生成的能力，因此模型仍可能追加回复或提前继续任务。自定义结束符不能消除这一限制。支持环境、实测结果和已知失败情况见[验收记录](docs/acceptance.md)；测试通过不代表所有对话均有停止保证。
 
@@ -86,10 +87,10 @@ APP_ORIGIN=https://questions.example.com PORT=8787 npm start
 
 - `ui/message` 发送答案，不是模型 suspend/resume 或强制停止接口。
 - UI 沙箱不支持 `navigator.clipboard`；发送失败时只展示可选择文本，由用户手动复制。
-- 真实 ChatGPT 验收尚未执行；当前停止行为执行次数为 0，没有可报告的真实失败样例。
+- 真实 ChatGPT 已完成一次四题型工具与 UI 回传功能验收，但没有逐项记录模型停止等待行为；该行为的正式统计执行次数仍为 0。
 - 当前服务不含业务认证。公开部署和提交前应按目标工作区要求决定是否增加认证、限流和日志策略。
 - 当前 `@openai/apps-sdk-ui@0.2.2` 的依赖树使完整 `npm audit` 报告 lodash 的已知问题，且 npm 当前没有可用修复。`npm audit --omit=dev` 对 Node 生产依赖报告 0 个漏洞，但仍应在发布前复核 UI 组件库更新及最终浏览器包。
-- `.app.json` 目前为空；必须部署服务并在 ChatGPT 注册后填入真实连接 ID，完整插件才可调用工具。
+- `.app.json` 目前为空；开发者模式 Tunnel 连接可调用工具，但完整插件仍需填入真实连接 ID 并验证 skill、工具和 UI 一起工作。
 
 限制依据和本地快照见 [OpenAI 文档索引](docs/reference/openai/README.md)与[限制摘要](docs/reference/openai/LIMITATIONS.md)。
 

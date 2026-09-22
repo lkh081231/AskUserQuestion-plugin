@@ -1,5 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { normalizeAppOrigin } from "./config.js";
+import { normalizeAppOrigin, normalizeListenHost } from "./config.js";
+
+describe("normalizeListenHost", () => {
+  it("defaults to loopback", () => {
+    expect(normalizeListenHost(undefined)).toBe("127.0.0.1");
+  });
+
+  it("allows an explicit container bind address", () => {
+    expect(normalizeListenHost(" 0.0.0.0 ")).toBe("0.0.0.0");
+  });
+
+  it("rejects an empty value", () => {
+    expect(() => normalizeListenHost(" ")).toThrow(/MCP_LISTEN_HOST/);
+  });
+});
 
 describe("normalizeAppOrigin", () => {
   it("allows an omitted value for local development", () => {

@@ -4,12 +4,13 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createQuestionServer } from "./app.js";
-import { normalizeAppOrigin } from "./config.js";
+import { normalizeAppOrigin, normalizeListenHost } from "./config.js";
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const widgetPath = resolve(currentDirectory, "../ui/index.html");
 const widgetHtml = await readFile(widgetPath, "utf8");
 const port = Number(process.env.PORT ?? 8787);
+const host = normalizeListenHost(process.env.MCP_LISTEN_HOST);
 const appOrigin = normalizeAppOrigin(process.env.APP_ORIGIN);
 const mcpPath = "/mcp";
 
@@ -77,8 +78,8 @@ const httpServer = createServer(async (request, response) => {
   response.writeHead(404).end("Not Found");
 });
 
-httpServer.listen(port, () => {
+httpServer.listen(port, host, () => {
   console.log(
-    `Ask User Question MCP server listening on http://localhost:${port}${mcpPath}`,
+    `Ask User Question MCP server listening on http://${host}:${port}${mcpPath}`,
   );
 });

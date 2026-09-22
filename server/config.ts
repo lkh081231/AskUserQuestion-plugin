@@ -1,3 +1,11 @@
+export function normalizeListenHost(value: string | undefined): string {
+  if (value === undefined) return "127.0.0.1";
+
+  const host = value.trim();
+  if (!host) throw new Error("MCP_LISTEN_HOST cannot be empty.");
+  return host;
+}
+
 export function normalizeAppOrigin(value: string | undefined): string | undefined {
   if (!value) return undefined;
 

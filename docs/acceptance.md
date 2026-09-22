@@ -60,6 +60,10 @@
 | 场景 | 结果 |
 | --- | --- |
 | `tunnel-client doctor --explain` | 通过；control plane、Runtime API Key、MCP target、MCP reachability、OAuth metadata、health listener 和 UI 均为 PASS |
+| user systemd 常驻服务 | 通过；MCP 与 Tunnel 均为 enabled、active、running |
+| 本地健康与就绪 | 通过；MCP 根路径正常，Tunnel `/healthz` 返回 `live`，`/readyz` 返回 `ready` |
+| 异常自动恢复 | 通过；终止 Tunnel 主进程后 PID 更新、`NRestarts` 从 0 增至 1，并恢复 `ready` |
+| 本地监听范围 | 通过；MCP `8787` 与 Tunnel 管理端口 `8081` 均仅监听 `127.0.0.1` |
 | ChatGPT 开发者模式连接 | 通过；通过 Tunnel 发现 `ask_user_questions` |
 | 工具 schema 与 UI 绑定 | 通过；发现四种题型及 questions、options、allow_other、required、placeholder |
 | 四题型工具调用 | 通过；一次调用展示 single select、multi select、text 和 confirm |
@@ -120,7 +124,7 @@
 | --- | --- | --- |
 | 本地服务 | 通过 | 无 |
 | Docker 镜像构建/运行 | 通过；镜像 `ask-user-question:0.1.0`，ID `sha256:2d4b21ed2b07…` | 容器显式监听 `0.0.0.0`，宿主健康检查和生产 `ui.domain` 通过 |
-| Secure MCP Tunnel | 功能验收通过；systemd MCP 已启用 | Tunnel systemd 等待 Runtime API Key credential 后启动 |
+| Secure MCP Tunnel | 通过；MCP 与 Tunnel systemd 均已启用并运行，健康、就绪和异常恢复测试通过 | 无 |
 | 稳定公网 HTTPS | 未执行 | 缺少域名、云账号和部署凭据 |
 | ChatGPT 开发者模式连接 | 通过 | Tunnel app 已发现工具并完成 UI 回传 |
 | `.app.json` 映射 | 未完成 | 缺少真实 `plugin_asdk_app...` ID |
@@ -129,6 +133,6 @@
 
 ## 结论
 
-本地实现、Secure MCP Tunnel、真实 ChatGPT 工具发现、四题型 UI 和答案回传已验证。计划尚未全部完成：阶段 1 缺少停止等待行为统计，阶段 3 缺少真实连接映射与完整插件安装，阶段 4 的公网部署和公开提交仍受外部环境阻塞。不得把本记录表述为插件已上线、已通过目录审核或模型必然停止。
+本地实现、Secure MCP Tunnel 常态化服务、真实 ChatGPT 工具发现、四题型 UI 和答案回传已验证。计划尚未全部完成：阶段 1 缺少停止等待行为统计，阶段 3 缺少真实连接映射与完整插件安装，阶段 4 的公网部署和公开提交仍受外部环境阻塞。不得把本记录表述为插件已上线、已通过目录审核或模型必然停止。
 
 Docker 验收使用 `APP_ORIGIN=https://questions.example.com` 验证生产 `ui.domain`，并在监听收紧后通过宿主端口 `18788` 复测；`GET /` 返回健康文本。测试容器使用 `--rm`，完成后已停止并删除。

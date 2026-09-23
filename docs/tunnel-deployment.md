@@ -72,11 +72,13 @@ curl --fail http://127.0.0.1:8081/readyz
 journalctl --user -u openai-mcp-tunnel.service -n 100 --no-pager
 ```
 
-OpenAI Docs 还建议在故障时重新执行：
+OpenAI Docs 建议在故障时执行 `doctor`。本项目常驻服务已经占用 8081，诊断使用临时端口：
 
 ```bash
-tunnel-client doctor --health.listen-addr 127.0.0.1:8081 --explain
+tunnel-client doctor --health.listen-addr 127.0.0.1:0 --explain
 ```
+
+该命令需加载与常驻服务相同的配置和凭据引用。`doctor` 会尝试绑定健康端口，使用 `127.0.0.1:0` 可避免与正在运行的 8081 冲突；判断常驻进程状态用上方 `/healthz` 和 `/readyz`。原生客户端组织上下文错误见[专项排查](client-troubleshooting.md)。
 
 更新应用时先完成检查和构建，再依次重启：
 

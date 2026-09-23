@@ -515,6 +515,12 @@ AskUserQuestionsApp
 └── SubmitButton
 ```
 
+### 8.4 原生客户端兼容性修复
+
+2026-09-23 的证据将 Windows 卡片加载/展示与手机/iPad Tunnel 入口组织鉴权分开。分阶段实施见[客户端修复方案](docs/client-repair-plan.md)，证据见[排查记录](docs/client-troubleshooting.md)。此工作与 B 版视觉改造分开提交。
+
+标准 MCP Apps 接口仍为主路径。官方兼容别名先作为单因素实验；旧桥接适配必须有真实宿主证据，不能从无状态 MCP 请求缺失初始化能力推断不支持 UI。手机/iPad 不通过修改 UI 或向本地响应添加组织头修复入口鉴权。公开 HTTPS 仅列作独立部署备选，尚未改变当前私有运行方式。
+
 ## 9. 规划目录
 
 以下是当前实现结构概览；测试文件和构建配置未全部展开。

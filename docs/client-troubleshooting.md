@@ -59,6 +59,14 @@ Tunnel 方法累计计数在两个失败样本前后发生如下变化，期间�
 
 两份分享记录使用的模型不同，不能把所有差异只归因于操作系统。后续跨端新调用应固定模型、账号上下文及连接；Windows 同一原始对话在浏览器呈现正常，则已经提供了无需重新生成工具结果的对照证据。
 
+## 继续排查与修复方案
+
+用户进一步确认：Windows 重开同一原始对话后仍看不到卡片，尽管该对话在浏览器已能显示。这不是仅凭首次显示失败作出的判断。
+
+2026-09-23 08:57 UTC 使用在线 UI HTML 做了隔离浏览器实验：标准握手后，无论只投递输入还是只投递结果，均能显示并提交一条 Q/A；只提供旧接口，或握手后不投递题目，2.5 秒观察时仍显示加载。另在内存 MCP 实验中验证兼容别名可以保留，并确认初始化能力不会自动传给新建的 MCP 实例。
+
+这些结果没有证明 Windows 使用旧接口，也不能替代原生测试。已制定分阶段[修复方案](client-repair-plan.md)：先测 Windows 元数据兼容别名，再按挂载/握手/通知证据决定是否适配桥接；移动端独立处理个人账号的入口鉴权。候选改动均未部署。
+
 ## 已验证的服务侧事实
 
 | 检查 | 结果 | 范围/限制 |
@@ -188,7 +196,8 @@ Shared-message request_id: 4efe9788-9226-4af9-9238-459c9204e209
 This exactly matches the prefix of two local Tunnel cmd_request_id values,
 forwarded at 08:34:46.301 and 08:34:46.783 UTC.
 The user confirmed that opening the SAME original conversation in a PC browser
-displays the question card; Windows does not. Investigate the Windows component
+displays the question card; reopening it in Windows still shows no card.
+Investigate the Windows component
 association/loading/rendering path separately from mobile organization auth.
 
 iPad failure: 2026-09-23 16:36 UTC+8 / 08:36 UTC.

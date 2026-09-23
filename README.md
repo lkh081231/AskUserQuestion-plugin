@@ -76,6 +76,7 @@ APP_ORIGIN=https://questions.example.com PORT=8787 npm start
 - [注册连接并安装插件](docs/installation.md)
 - [公开发布材料与检查清单](docs/publishing.md)
 - [验收记录](docs/acceptance.md)
+- [原生客户端排查与修复方案](docs/client-repair-plan.md)
 
 部署和完整插件安装是两个独立步骤。仅运行本地服务不会产生 `.app.json` 所需的 ChatGPT 注册连接 ID；仅安装 skill 也不会自动部署 MCP 服务。
 

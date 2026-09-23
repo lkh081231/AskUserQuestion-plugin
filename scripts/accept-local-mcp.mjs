@@ -90,6 +90,7 @@ try {
   assert.equal(tool.annotations?.destructiveHint, false);
   assert.equal(tool.annotations?.openWorldHint, false);
   assert.equal(tool._meta?.ui?.resourceUri, "ui://ask-user-questions/v1.html");
+  assert.equal(tool._meta?.["openai/outputTemplate"], tool._meta.ui.resourceUri);
   assert.equal(tool.inputSchema.type, "object");
   assert.equal(tool.outputSchema?.type, "object");
   pass("tools/list metadata, schemas, annotations, and UI binding");
@@ -162,9 +163,10 @@ try {
   assert.equal(resources.resources[0].uri, "ui://ask-user-questions/v1.html");
   assert.equal(resources.resources[0].mimeType, "text/html;profile=mcp-app");
   const resource = await client.readResource({
-    uri: "ui://ask-user-questions/v1.html",
+    uri: tool._meta["openai/outputTemplate"],
   });
   assert.equal(resource.contents.length, 1);
+  assert.equal(resource.contents[0].uri, tool._meta.ui.resourceUri);
   assert.equal(resource.contents[0].mimeType, "text/html;profile=mcp-app");
   assert.match(resource.contents[0].text ?? "", /<html/i);
   assert.equal(resource.contents[0]._meta?.ui?.domain, undefined);

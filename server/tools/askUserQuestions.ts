@@ -67,6 +67,7 @@ export function registerAskUserQuestions(
       },
       _meta: {
         ui: { resourceUri: QUESTION_RESOURCE_URI },
+        "openai/outputTemplate": QUESTION_RESOURCE_URI,
         "openai/toolInvocation/invoking": "Preparing questions…",
         "openai/toolInvocation/invoked": "Waiting for your answer",
       },

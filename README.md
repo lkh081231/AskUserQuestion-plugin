@@ -44,7 +44,9 @@ APP_ORIGIN=https://questions.example.com PORT=8787 npm start
 | 命令 | 用途 |
 | --- | --- |
 | `npm run typecheck` | 检查 UI 和服务端 TypeScript |
-| `npm test` | 运行 Vitest / jsdom 测试 |
+| `npm test` | 运行 Vitest / jsdom 及只读诊断脚本测试 |
+| `npm run test:diagnostics` | 单独验证诊断字段过滤、计数比较及重置检测 |
+| `npm run diagnose:clients -- --since <ISO时间>` | 读取本地 Tunnel 诊断快照；时间须带时区，支持 `--baseline <快照.json>` |
 | `npm run build` | 构建单文件 MCP UI 和服务端 JavaScript |
 | `npm run accept:local` | 构建并通过 Streamable HTTP 客户端执行本地 MCP 协议验收 |
 | `npm run validate:package` | 校验 portable manifest、compatibility manifest、skill、资产和连接映射结构 |

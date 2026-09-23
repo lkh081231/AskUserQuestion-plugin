@@ -2,7 +2,7 @@
 
 排查日期：2026-09-22 至 2026-09-23（UTC）。当前结论：**Windows 的失败调用已关联到本机日志，且同一原始对话在浏览器能显示卡片，问题范围缩小到 Windows 客户端卡片加载/展示路径。iPad 则优先指向调用入口的组织上下文鉴权。两者应分开排查，尚未完成修复。**
 
-本次仅进行只读排查，没有修改生产代码、运行配置、组织关联或凭据，也没有重启服务。UI 已确认方案的交接见 [plan.md](../plan.md) 和 [TODO.md](../TODO.md)，提交 `0714b5f`。
+在线服务侧保持只读排查，没有改变已运行的代码、运行配置、组织关联或凭据，也没有重启服务。仓库中另有已通过本地检查、尚未部署的兼容候选。UI 已确认方案的交接见 [plan.md](../plan.md) 和 [TODO.md](../TODO.md)，提交 `0714b5f`。
 
 ## 用户提供的现象
 
@@ -66,6 +66,20 @@ Tunnel 方法累计计数在两个失败样本前后发生如下变化，期间�
 2026-09-23 08:57 UTC 使用在线 UI HTML 做了隔离浏览器实验：标准握手后，无论只投递输入还是只投递结果，均能显示并提交一条 Q/A；只提供旧接口，或握手后不投递题目，2.5 秒观察时仍显示加载。另在内存 MCP 实验中验证兼容别名可以保留，并确认初始化能力不会自动传给新建的 MCP 实例。
 
 这些结果没有证明 Windows 使用旧接口，也不能替代原生测试。已制定分阶段[修复方案](client-repair-plan.md)：先测 Windows 元数据兼容别名，再按挂载/握手/通知证据决定是否适配桥接；移动端独立处理个人账号的入口鉴权。候选改动均未部署。
+
+## 00:04 浏览器与 00:07 Android 复测
+
+以下时间为 UTC+8 的 **2026-09-24**，对应 UTC 的 2026-09-23：
+
+| 复测 | 用户结果 | 本机证据 |
+| --- | --- | --- |
+| 00:04 浏览器，GPT-5.6 Sol | 正常 | 16:04:17.286 UTC 转发，`cmd_request_id=ad6149a3-e990-450f-9d01-b74cb6daa362/k5lp`；只有时间相关性，未取得分享 request ID |
+| Windows | 应用无法启动，用户自行排查 | 没有本轮插件调用样本；候选 B 未部署 |
+| 00:07 Android，退出并重开应用后 | 仍为 UNAUTHORIZED | 16:06–16:09 UTC 的 Tunnel journal 无事件，管理日志无该窗口转发；尚缺该次完整响应/request ID |
+
+本轮排除了“只重开 Android 应用即可恢复”。在线服务保持 A 版，没有修改组织关联或发布兼容补丁。已请求同账号重新登录后的单次复测，结果待补。
+
+[16:09 诊断快照](diagnostics/2026-09-23-mobile-snapshot.json)中 `tools/call/200=9`、`resources/read/200=8`；该快照采于 Android 失败**之后**，不能冒充失败前基线。16:10 再采样计数未变只说明两个快照之间无已计数完成请求；入口判断主要依据用户报错与对应时间窗口日志，仍需平台鉴权证据。
 
 ## 已验证的服务侧事实
 
@@ -172,6 +186,32 @@ curl --fail --silent http://127.0.0.1:8081/metrics \
 
 `doctor` 会尝试绑定健康端口。常驻服务占用 8081 时，用同端口执行 `doctor` 会报 `address already in use`；这不是常驻服务故障。本次改用 `--health.listen-addr 127.0.0.1:0` 后通过。诊断时应使用同一已加载配置及受保护凭据引用，不能把 API key 写进命令行或报告。
 
+## 只读复测命令
+
+`diagnose:clients` 固定读取 `127.0.0.1:8081` 的健康、状态、方法计数及有限日志，不读取凭据、不调用业务工具、不重启服务。输出只保留时间、已知方法、HTTP 状态及校验后的请求 ID；不输出日志正文、Tunnel/组织/工作区标识或问答内容。依赖现有 tunnel-client 管理接口，无新增依赖。
+
+复测前保存快照，`--since` 使用带时区的 ISO 时间：
+
+```bash
+npm run --silent diagnose:clients -- --since 2026-09-23T16:00:00Z > /tmp/ask-client-before.json
+```
+
+在用户完成一次客户端调用后比较：
+
+```bash
+npm run --silent diagnose:clients -- --since 2026-09-23T16:00:00Z --baseline /tmp/ask-client-before.json
+```
+
+将示例时间替换为实际复测窗口，保存前后快照时不要覆盖同一路径。`comparison.state=comparable` 才可读取差值；进程改变、计数回退/缺失、非法基线均不会输出可用差值。接口不可达、响应异常或计数不可用时命令以非零状态结束。日志数量有上限，采样不是原子事务，缺少事件与 HTTP 200 的含义仍受前述证据限制约束；脚本不自动判定客户端根因。
+
+脚本检查：
+
+```bash
+npm run test:diagnostics
+```
+
+此项也纳入 `npm test`，从而纳入 `npm run check`。
+
 ## 可提交给 OpenAI 的诊断摘要
 
 以下仅为草稿，尚未发送：
@@ -186,9 +226,16 @@ UNAUTHORIZED
 Access denied: this tunnel requires an active organization context.
 Configure the organization ID or send the OpenAI-Organization header.
 
-Android: 1.2026.258 (15); no separate timestamp/request ID captured yet.
+Android: 1.2026.258 (15). After fully closing and reopening the app,
+UNAUTHORIZED persisted at 2026-09-24 00:07 UTC+8 / 2026-09-23 16:07 UTC.
+No local Tunnel journal events or matching admin forwarding events were found
+in the 16:06-16:09 UTC window. A new request ID/raw response is still needed.
+A fresh-login comparison has been requested but has no result yet.
 iOS/iPad: 1.2026.251(34655566626).
-Windows: 26.905.11957.
+Windows: 26.905.11957. Later testing is paused because the user reports the
+Windows app itself will not open; no evidence links this startup issue to MCP.
+The user reports a successful browser call at 2026-09-24 00:04 UTC+8 using
+GPT-5.6 Sol (reported display name, not verified from response metadata).
 
 Windows failure: 2026-09-23 16:35 UTC+8 / 08:35 UTC.
 Share: https://chatgpt.com/s/t_6ab38f326614819195f6c4a8acbb2aa9

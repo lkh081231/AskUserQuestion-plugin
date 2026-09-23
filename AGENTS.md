@@ -39,6 +39,8 @@
 - 新增构建与测试脚本时，将准确命令补充到本文和 README。
 - 安装依赖使用 `npm install`；完整本地检查使用 `npm run check`。
 - 单独执行时使用 `npm run typecheck`、`npm test` 和 `npm run build`。
+- `npm test` 同时执行 UI/服务测试和诊断脚本测试；仅诊断测试使用 `npm run test:diagnostics`。
+- 客户端复测使用 `npm run diagnose:clients -- --since <带时区的ISO时间>` 读取本地 Tunnel 状态、脱敏事件和方法计数；加 `--baseline <快照.json>` 比较同进程计数，命令说明见 `docs/client-troubleshooting.md`。
 - 使用 `npm run accept:local` 构建并执行可重复的本地 Streamable HTTP MCP 验收。
 - 构建后使用 `npm start` 启动 Streamable HTTP 服务，默认端点为 `http://localhost:8787/mcp`；可通过 `PORT` 覆盖端口。
 - 使用 `npm run validate:package` 校验插件结构，使用 `npm run package:plugin` 生成 `dist/plugin/ask-user-question/`。

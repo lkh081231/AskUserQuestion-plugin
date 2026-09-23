@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "samplingStartedAt": "2026-09-23T16:09:19.302Z",
+  "capturedAt": "2026-09-23T16:09:19.393Z",
+  "since": "2026-09-23T16:00:00Z",
+  "tunnelStartedAt": "2026-09-22T06:48:01.637809302Z",
+  "endpoints": {
+    "status": {
+      "ok": true,
+      "httpStatus": 200
+    },
+    "health": {
+      "ok": true,
+      "httpStatus": 200
+    },
+    "ready": {
+      "ok": true,
+      "httpStatus": 200
+    },
+    "metrics": {
+      "ok": true,
+      "httpStatus": 200
+    },
+    "logs": {
+      "ok": true,
+      "httpStatus": 200
+    }
+  },
+  "counts": [
+    {
+      "method": "initialize",
+      "status": "200",
+      "count": 8
+    },
+    {
+      "method": "notifications/initialized",
+      "status": "202",
+      "count": 3
+    },
+    {
+      "method": "resources/read",
+      "status": "200",
+      "count": 8
+    },
+    {
+      "method": "server/discover",
+      "status": "400",
+      "count": 3
+    },
+    {
+      "method": "tools/call",
+      "status": "200",
+      "count": 9
+    },
+    {
+      "method": "tools/list",
+      "status": "200",
+      "count": 2
+    }
+  ],
+  "logWindow": {
+    "availableEntries": 215,
+    "requestedLimit": 2000,
+    "oldestAvailableEventAt": "2026-09-22T06:48:01.637900554Z"
+  },
+  "events": [
+    {
+      "time": "2026-09-23T16:04:17.286788946Z",
+      "kind": "forwarded",
+      "requestId": "cmd_acd49c84_5e96_4a84_bd90_d2a7b2d061d1",
+      "commandRequestId": "ad6149a3-e990-450f-9d01-b74cb6daa362/k5lp",
+      "rpcRequestId": 0
+    }
+  ],
+  "comparison": {
+    "state": "no-baseline"
+  },
+  "limitations": [
+    "Counts have no client labels; HTTP 200 does not establish tool isError=false.",
+    "Snapshots are not atomic; requests may complete while sampling.",
+    "Local log retention is bounded; no matching event is not proof of no upstream request."
+  ]
+}

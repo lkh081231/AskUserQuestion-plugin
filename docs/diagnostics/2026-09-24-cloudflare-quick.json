@@ -1,0 +1,25 @@
+{
+  "testedAt": "2026-09-24T07:39:49.057Z",
+  "endpoint": "https://abroad-ending-undefined-lecture.trycloudflare.com/mcp",
+  "checks": [
+    "Public HTTPS health endpoint with certificate verification",
+    "Public MCP OPTIONS",
+    "MCP initialize",
+    "tools/list schema and UI binding",
+    "tools/call all four question types",
+    "Invalid duplicate IDs rejected",
+    "UI resource identical to live A baseline"
+  ],
+  "server": {
+    "name": "ask-user-question-server",
+    "version": "0.1.0"
+  },
+  "uiBytes": 580454,
+  "uiSha256": "685cd6b8f84c2accfca103961c3d7cb7d6923040ca34ae9a4d2091573dd24075",
+  "compatibilityAlias": null,
+  "backgroundErrors": [],
+  "limitations": [
+    "No real ChatGPT client interaction tested",
+    "Quick Tunnel SSE is unsupported; current MCP uses JSON responses"
+  ]
+}

@@ -1,6 +1,6 @@
 # 原生客户端修复方案
 
-制定日期：2026-09-23；更新日期：2026-09-24。状态：**Windows 元数据候选已实现并通过完整本地检查；浏览器 A 版基线正常，Windows 因客户端无法启动暂缓；原生端尚未修复。用户新增要求先部署 Cloudflare Tunnel 测试：连接器已就绪，域名路由与客户端验证待完成。** 既有请求 ID、版本和日志见[排查记录](client-troubleshooting.md)。本方案独立于交给 5.6 sol 的 B 版视觉、分页和提交摘要改造。
+制定日期：2026-09-23；更新日期：2026-09-24。状态：**Windows 元数据候选已实现并通过完整本地检查；浏览器 A 版基线正常，Windows 因客户端无法启动暂缓；原生端尚未修复。用户新增要求先部署 Cloudflare Quick Tunnel 测试：临时 HTTPS 端点已可用，7 项公网 MCP 检查通过，客户端验证待完成。** 既有请求 ID、版本和日志见[排查记录](client-troubleshooting.md)。本方案独立于交给 5.6 sol 的 B 版视觉、分页和提交摘要改造。
 
 ## 1. 结论与执行顺序
 
@@ -10,7 +10,7 @@
 | P0 | 手机/iPad：核查个人账号的 Tunnel 调用上下文 | iPad 报组织鉴权，失败分钟未见转发；同一个人账号的浏览器正常 | 已整理平台定位材料，待原生/平台侧复核 |
 | P1 | Windows：如别名无效，用独立诊断资源定位挂载、握手、题目通知 | 当前仅凭无卡片无法区分这些阶段 | 已验证现有 UI 在模拟标准宿主正常，待原生诊断 |
 | P2 | 仅在证实旧桥接存在时增加能力检测适配 | 本地“仅旧接口”场景不显示题目，但尚未证明 Windows 使用旧接口 | 条件方案，暂不实现 |
-| 备选 | 独立的受保护 HTTPS MCP 连接 | 可隔离 Secure MCP Tunnel 的入口鉴权路径 | 未部署；不保证能解决原生 UI 问题 |
+| 备选 | 独立 HTTPS MCP 连接 | 可隔离 Secure MCP Tunnel 的入口鉴权路径 | 已按用户要求部署临时匿名 Quick Tunnel，公网协议通过；正式认证部署及真机验证未完成 |
 
 首先做 Windows 最小元数据实验。移动端优先保留现有私有 Tunnel，按已取得的 iPad request ID 定位调用入口；如必须尽快恢复原生调用，再评估 HTTPS 备选。每次实验只改变一个因素，保留浏览器基线。
 
@@ -166,6 +166,8 @@ ChatGPT → 受保护的 HTTPS /mcp → 当前 MCP 服务
 官方合并变更日志中的 MCP App UI 元数据保留修复 `#45805` 位于 **Codex CLI 0.156.0** 的变更列表，不能当作普通 ChatGPT Chat 模式 Windows `26.905.11957` 已知缺陷或保证升级有效的依据。[产品变更日志](https://learn.chatgpt.com/docs/changelog)
 
 ## 7. 实施记录
+
+2026-09-24 07:38 UTC，按用户后续要求启动 Quick Tunnel，07:39:49 UTC 完成 7 项公网 MCP 检查，全部通过。在线 A 版 UI 字节保持一致；等待域名的命名 Tunnel 容器已停止。临时 HTTPS 地址、协议验收快照和真机步骤见[Cloudflare 测试记录](cloudflare-test.md)，尚未取得移动端通过结果。
 
 2026-09-24 用户补充：已在 ChatGPT 选择 Tunnel 方式新建连接，手机/iPad 仍报相同的 active organization context 错误，后续不重复要求重建。用户随后提供 Cloudflare Tunnel 运行令牌并要求先部署测试。07:23 UTC 已启动独立 Docker 连接器，4 条连接就绪；未重建、重启或替换原 MCP 服务及 Secure MCP Tunnel，公网路由与真机结果见[测试记录](cloudflare-test.md)。
 

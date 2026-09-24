@@ -6,7 +6,9 @@ Ask User Question 是一个 ChatGPT / Codex 插件：当目标、范围、约束
 
 ## 当前状态
 
-本地实现已经完成：MCP 服务、四种题型 UI、校验与失败兜底、配套 skill、portable/compatibility manifest、容器构建文件和交付文档均已提供。类型检查、34 个 UI/服务测试、4 个诊断测试、本地 MCP 协议烟雾测试、Docker 运行、skill 校验和插件结构校验已通过。Secure MCP Tunnel 已在 ChatGPT 开发者模式完成工具发现、四题型卡片展示及 `ui/message` 答案回传验证；MCP 与 Tunnel 的 user systemd 服务也已启用，并通过健康、就绪和自动重启测试。
+本地实现已经完成：MCP 服务、四种题型 UI、校验与失败兜底、配套 skill、portable/compatibility manifest、容器构建文件和交付文档均已提供。类型检查、34 个 UI/服务测试、4 个诊断测试、本地 MCP 协议烟雾测试、Docker 运行、skill 校验和插件结构校验已通过。OpenAI Secure MCP Tunnel 已在 ChatGPT 浏览器端开发者模式完成工具发现、四题型卡片展示及 `ui/message` 答案回传验证；MCP 与 Tunnel 的 user systemd 服务也已启用，并通过健康、就绪和自动重启测试。
+
+**当前暂时使用 Cloudflare Quick Tunnel。** 本项目在手机/iPad 原生 ChatGPT 客户端通过 OpenAI Secure MCP Tunnel 调用时遇到 Organization Context 鉴权错误，同账号浏览器正常；该问题尚未修复。改用 Quick Tunnel 的 HTTPS 连接后，用户已确认手机提问、显示和提交成功，iPad 的该路径仍待验证。首次加载延迟暂不处理，具体证据见[客户端排查](docs/client-troubleshooting.md)和[Quick Tunnel 测试记录](docs/cloudflare-test.md)。
 
 以下步骤仍未完成：部署到稳定公网 HTTPS、写入真实 `plugin_asdk_app...` ID、安装包含 skill 的完整插件，以及按模型和提示统计停止等待行为。因此当前 `.app.json` 的 `apps` 映射仍为空，Tunnel 功能验收不能视为公开部署、完整插件安装或停止行为保证。详情见[验收记录](docs/acceptance.md)。
 
@@ -73,6 +75,14 @@ APP_ORIGIN=https://questions.example.com PORT=8787 npm start
 
 ## 安装与部署
 
+当前临时使用方式：在 ChatGPT 创建 HTTPS MCP 连接，认证选择“无”，填写以下地址；测试对话只启用此连接，避免与原 OpenAI Secure MCP Tunnel 的同名工具混用。
+
+```text
+https://abroad-ending-undefined-lecture.trycloudflare.com/mcp
+```
+
+该地址为临时 Quick Tunnel 地址，进程重启后需要重新读取地址并更新 ChatGPT 连接。当前容器正在后台运行，未设置自动重启；端点无应用认证。运行状态、限制和停止方法见[Quick Tunnel 测试记录](docs/cloudflare-test.md)。
+
 - [部署 MCP 服务](docs/deployment.md)
 - [Secure MCP Tunnel 常态化部署](docs/tunnel-deployment.md)
 - [Cloudflare Tunnel 移动端对照测试](docs/cloudflare-test.md)
@@ -85,9 +95,19 @@ APP_ORIGIN=https://questions.example.com PORT=8787 npm start
 
 ## 已知限制
 
-能力核对日期：**2026-09-22**。
+停止等待能力核对日期：**2026-09-22**；客户端与连接状态更新日期：**2026-09-24**。
 
 本插件通过工具说明和 skill 请求 ChatGPT 在展示问题后结束本轮，等待你的回答。目前查阅的公开插件接口不提供强制停止当前模型生成的能力，因此模型仍可能追加回复或提前继续任务。自定义结束符不能消除这一限制。支持环境、实测结果和已知失败情况见[验收记录](docs/acceptance.md)；测试通过不代表所有对话均有停止保证。
+
+本项目已观察到 OpenAI Secure MCP Tunnel 在手机/iPad 原生客户端返回以下 Organization Context 鉴权错误：
+
+```text
+UNAUTHORIZED
+Access denied: this tunnel requires an active organization context.
+Configure the organization ID or send the OpenAI-Organization header.
+```
+
+同账号浏览器可用，手机重登及通过 Tunnel 方式新建连接后仍失败；现有证据指向调用入口的组织上下文，但平台侧根因尚未确认。此结论仅描述本项目已记录的客户端样本，不代表所有原生客户端均不支持 Tunnel。Quick Tunnel 是当前临时替代入口，不表示原 OpenAI Tunnel 鉴权已修复；错误样本、版本与请求关联见[排查记录](docs/client-troubleshooting.md)，替代路径的验收见[验收记录](docs/acceptance.md#cloudflare-tunnel-临时对照部署)。
 
 此外：
 

@@ -1,0 +1,273 @@
+{
+  "capturedAt": "2026-09-24T07:50:42.752942+00:00",
+  "endpoint": "https://abroad-ending-undefined-lecture.trycloudflare.com/mcp",
+  "summary": [
+    {
+      "origin": "loopback",
+      "method": "tools/call",
+      "samples": 3,
+      "medianTtfbMs": 3.0,
+      "medianTotalMs": 3.3,
+      "minTotalMs": 2.7,
+      "maxTotalMs": 3.6,
+      "downloadBytes": 352,
+      "decodedBytes": 352,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "352"
+      }
+    },
+    {
+      "origin": "loopback",
+      "method": "resources/read",
+      "samples": 3,
+      "medianTtfbMs": 15.2,
+      "medianTotalMs": 16.1,
+      "minTotalMs": 9.9,
+      "maxTotalMs": 17.6,
+      "downloadBytes": 582178,
+      "decodedBytes": 582178,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "582178"
+      }
+    },
+    {
+      "origin": "quick",
+      "method": "tools/call",
+      "samples": 3,
+      "medianTtfbMs": 87.8,
+      "medianTotalMs": 88.1,
+      "minTotalMs": 86.0,
+      "maxTotalMs": 491.3,
+      "downloadBytes": 240,
+      "decodedBytes": 352,
+      "headers": {
+        "content-type": "application/json",
+        "cf-cache-status": "DYNAMIC",
+        "content-encoding": "gzip"
+      }
+    },
+    {
+      "origin": "quick",
+      "method": "resources/read",
+      "samples": 3,
+      "medianTtfbMs": 131.9,
+      "medianTotalMs": 147.9,
+      "minTotalMs": 145.6,
+      "maxTotalMs": 151.6,
+      "downloadBytes": 150180,
+      "decodedBytes": 582178,
+      "headers": {
+        "content-type": "application/json",
+        "cf-cache-status": "DYNAMIC",
+        "content-encoding": "gzip"
+      }
+    }
+  ],
+  "samples": [
+    {
+      "origin": "loopback",
+      "method": "tools/call",
+      "run": 1,
+      "httpStatus": 200,
+      "ttfbMs": 3.5,
+      "totalMs": 3.6,
+      "downloadBytes": 352,
+      "decodedBytes": 352,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "352"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "loopback",
+      "method": "resources/read",
+      "run": 1,
+      "httpStatus": 200,
+      "ttfbMs": 15.2,
+      "totalMs": 16.1,
+      "downloadBytes": 582178,
+      "decodedBytes": 582178,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "582178"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "quick",
+      "method": "tools/call",
+      "run": 1,
+      "httpStatus": 200,
+      "ttfbMs": 490.8,
+      "totalMs": 491.3,
+      "downloadBytes": 239,
+      "decodedBytes": 352,
+      "headers": {
+        "content-type": "application/json",
+        "cf-cache-status": "DYNAMIC",
+        "content-encoding": "gzip"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "quick",
+      "method": "resources/read",
+      "run": 1,
+      "httpStatus": 200,
+      "ttfbMs": 112.2,
+      "totalMs": 145.6,
+      "downloadBytes": 150206,
+      "decodedBytes": 582178,
+      "headers": {
+        "content-type": "application/json",
+        "cf-cache-status": "DYNAMIC",
+        "content-encoding": "gzip"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "loopback",
+      "method": "tools/call",
+      "run": 2,
+      "httpStatus": 200,
+      "ttfbMs": 2.5,
+      "totalMs": 2.7,
+      "downloadBytes": 352,
+      "decodedBytes": 352,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "352"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "loopback",
+      "method": "resources/read",
+      "run": 2,
+      "httpStatus": 200,
+      "ttfbMs": 9.0,
+      "totalMs": 9.9,
+      "downloadBytes": 582178,
+      "decodedBytes": 582178,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "582178"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "quick",
+      "method": "tools/call",
+      "run": 2,
+      "httpStatus": 200,
+      "ttfbMs": 87.8,
+      "totalMs": 88.1,
+      "downloadBytes": 239,
+      "decodedBytes": 352,
+      "headers": {
+        "content-type": "application/json",
+        "cf-cache-status": "DYNAMIC",
+        "content-encoding": "gzip"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "quick",
+      "method": "resources/read",
+      "run": 2,
+      "httpStatus": 200,
+      "ttfbMs": 131.9,
+      "totalMs": 147.9,
+      "downloadBytes": 150376,
+      "decodedBytes": 582178,
+      "headers": {
+        "content-type": "application/json",
+        "cf-cache-status": "DYNAMIC",
+        "content-encoding": "gzip"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "loopback",
+      "method": "tools/call",
+      "run": 3,
+      "httpStatus": 200,
+      "ttfbMs": 3.0,
+      "totalMs": 3.3,
+      "downloadBytes": 352,
+      "decodedBytes": 352,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "352"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "loopback",
+      "method": "resources/read",
+      "run": 3,
+      "httpStatus": 200,
+      "ttfbMs": 16.7,
+      "totalMs": 17.6,
+      "downloadBytes": 582178,
+      "decodedBytes": 582178,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "582178"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "quick",
+      "method": "tools/call",
+      "run": 3,
+      "httpStatus": 200,
+      "ttfbMs": 85.6,
+      "totalMs": 86.0,
+      "downloadBytes": 240,
+      "decodedBytes": 352,
+      "headers": {
+        "content-type": "application/json",
+        "cf-cache-status": "DYNAMIC",
+        "content-encoding": "gzip"
+      },
+      "rpcError": false,
+      "toolError": false
+    },
+    {
+      "origin": "quick",
+      "method": "resources/read",
+      "run": 3,
+      "httpStatus": 200,
+      "ttfbMs": 135.6,
+      "totalMs": 151.6,
+      "downloadBytes": 150180,
+      "decodedBytes": 582178,
+      "headers": {
+        "content-type": "application/json",
+        "cf-cache-status": "DYNAMIC",
+        "content-encoding": "gzip"
+      },
+      "rpcError": false,
+      "toolError": false
+    }
+  ],
+  "limitations": [
+    "Measurements originate from the deployment host, not the mobile ChatGPT client.",
+    "Does not measure ChatGPT tool scheduling, iframe mounting, JavaScript execution, or host handshake.",
+    "Three samples per method and path; no cold-cache guarantee."
+  ]
+}

@@ -10,7 +10,7 @@ Quick Tunnel 已于 07:38 UTC 启动；07:39:49 UTC 完成 7 项公网 MCP 检�
 https://abroad-ending-undefined-lecture.trycloudflare.com/mcp
 ```
 
-手机/iPad 的真实 ChatGPT 调用、卡片显示与提交仍待用户验证；公网协议通过不代表原生端已修复。
+用户随后确认手机通过本轮 HTTPS 连接提问、显示、提交均成功；首次显示“正在加载问题”后约等待 5 秒，第二次较快。iPad 尚未提供本轮结果。手机这次功能成功不等于已完成各端多次验收，也不代表原 Secure MCP Tunnel 的组织上下文问题已修复。
 
 ## 当前 Quick Tunnel 配置
 
@@ -38,7 +38,7 @@ Quick Tunnel 地址临时分配，进程重新启动后应重新读取地址并�
 3. 固定账号、模型和连接，依次在浏览器、Android、iPad 新对话中调用 `ask_user_questions`，显示问题后填写并提交。
 4. 分别记录调用时间、客户端版本、是否有组织错误、卡片显示、提交是否恰好产生一条 Q/A、助手能否继续。各原生端至少 3 次新对话和 1 次重开检查后才记为本轮验收通过。
 
-上述 HTTPS 连接步骤对应 [ChatGPT 官方连接说明](https://developers.openai.com/plugins/deploy/connect-chatgpt)。此处尚未执行 ChatGPT 账号内的连接创建和真机操作。
+上述 HTTPS 连接步骤对应 [ChatGPT 官方连接说明](https://developers.openai.com/plugins/deploy/connect-chatgpt)。手机真机结果来自用户回报，连接创建和真机操作由用户完成；浏览器及 iPad 的本轮对照结果待补充。
 
 ## 验证记录
 
@@ -55,9 +55,30 @@ Quick Tunnel 地址临时分配，进程重新启动后应重新读取地址并�
 | UI `resources/read` | 通过，`text/html;profile=mcp-app`，580454 字节 |
 | UI SHA-256 | `685cd6b8f84c2accfca103961c3d7cb7d6923040ca34ae9a4d2091573dd24075`，与原 A 版一致 |
 | SDK 后台错误 | 本次检查未记录到错误 |
-| 浏览器、Android、iPad 卡片显示及答案提交 | 未执行 |
+| 手机提问、显示及提交 | 用户确认均成功；首次加载提示约 5 秒，第二次较快 |
+| 浏览器、iPad 本轮 HTTPS 对照 | 未取得单独结果 |
+| 各端至少 3 次新对话及 1 次重开 | 尚未完整记录 |
 
 结构化检查结果见[公网验收快照](diagnostics/2026-09-24-cloudflare-quick.json)。原有 `diagnose:clients` 只观察 Secure MCP Tunnel，不能用其计数衡量本轮 Cloudflare 请求。连接数或公网 MCP 返回 200 不能替代真实 ChatGPT 卡片与 `ui/message` 验收。
+
+## 手机首次加载耗时
+
+用户描述的慢阶段是已经显示“正在加载问题”，不是卡片出现前一直空白。现有 UI 在 `isConnected`、`app` 或题目 `data` 未就绪时显示这条提示；没有人为设置 5 秒延迟。提示已经渲染说明 UI 脚本已开始运行，但没有真机分阶段时间戳，尚不能区分宿主握手、题目通知投递和客户端调度的耗时。
+
+07:50:42 UTC 从部署主机分别通过 loopback 与公网 HTTPS 各采样 3 次，使用合成问题；每次 curl 允许压缩并启用 TLS 校验。结果如下：
+
+| 路径 | 操作 | 首字节中位数 | 总耗时中位数 | 总耗时范围 |
+| --- | --- | --- | --- | --- |
+| loopback | `tools/call` | 3.0 ms | 3.3 ms | 2.7–3.6 ms |
+| loopback | `resources/read` | 15.2 ms | 16.1 ms | 9.9–17.6 ms |
+| Quick Tunnel | `tools/call` | 87.8 ms | 88.1 ms | 86.0–491.3 ms |
+| Quick Tunnel | `resources/read` | 131.9 ms | 147.9 ms | 145.6–151.6 ms |
+
+UI HTML 为 580454 字节，其中内联 JavaScript 469926 字节、内联 CSS 110182 字节；未发现外部 script 或 stylesheet 标签。公网 UI 的 JSON-RPC 响应已由 Cloudflare gzip 压缩，线上传输 150180 字节，解压后为 582178 字节，`CF-Cache-Status` 为 `DYNAMIC`。
+
+这些样本只测部署主机到公网端点，不能代替手机网络或 ChatGPT 内部耗时，也未保证冷缓存。第二次更快可能与首次初始化或缓存有关，当前没有足够证据确认原因；不把它直接归因于 Quick Tunnel、HTML 体积或服务处理慢。下一步性能定位应分别测量 UI 脚本启动、`ui/initialize` 完成、题目通知到达和首次表单显示，不能用加缓存或猜测性桥接替换当作已验证修复。
+
+结构化样本见[耗时快照](diagnostics/2026-09-24-cloudflare-latency.json)。本阶段只采样和记录，没有发布 UI 修改、加入问答响应缓存或改变现有发送路径。
 
 ## 停止、重启与回退
 

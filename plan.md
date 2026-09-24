@@ -64,7 +64,7 @@ MCP 请求正常返回，不保持挂起。停止等待是由工具说明和 ski
 
 ### 3.1 布局与操作
 
-2026-09-22 用户已确认 B 版视觉及最终交互，预览提交为 `2fe1f83`。参考 [固定输入框与分页预览](docs/previews/chat-flow.html)、[分页截图](docs/previews/chat-flow-multiple.png)和[提交后摘要](docs/previews/chat-flow-multiple-submitted.png)。以下为待实施的新要求，现有正式 UI 仍是一次展示全部问题、成功后禁用的旧版本；实施清单见 [TODO](TODO.md)，交给用户后续使用的 5.6 sol 执行。
+2026-09-22 用户已确认 B 版视觉及最终交互，预览提交为 `2fe1f83`。参考 [固定输入框与分页预览](docs/previews/chat-flow.html)、[分页截图](docs/previews/chat-flow-multiple.png)和[提交后摘要](docs/previews/chat-flow-multiple-submitted.png)。以下交互已于 2026-09-24 由 MiMo v2.6 Pro 实施到正式 React MCP Apps UI，并通过本地用户行为测试；真实 ChatGPT 宿主、`requestModal` 弹窗和移动端软键盘本轮未测试，结果见[验收记录](docs/acceptance.md)。
 
 - B 版视觉：浅色背景、细边框、灰色编号、选中项浅灰高亮和深色编号；整行选择区域覆盖编号、文字及留白。
 - 提问面板紧贴聊天输入框上方，滚动历史消息时面板和输入框不移动。此为已确认的产品目标，宿主能力仍须先验证，见第 3.1.1 节。
@@ -80,6 +80,8 @@ MCP 请求正常返回，不保持挂起。停止等待是由工具说明和 ski
 ### 3.1.1 宿主能力核验与边界
 
 独立 HTML 预览控制整个页面，不能作为 ChatGPT 内嵌 MCP App 能绑定宿主输入框的证据。正式 UI 开始前须核对最新官方接口和实际宿主：定位、显示模式、关闭/收起及高度调整能力，并记录来源、环境和实测结果。
+
+2026-09-24 最新官方接口及本地 SDK 核验见 [宿主能力记录](docs/host-ui-capabilities.md)。用户提出 `window.openai.requestModal()` 宿主弹窗候选；官方提供入口，但当前连接的题目传递、提交、关闭和摘要流程仍待实测，尚未将其设为默认行为。
 
 不得以 iframe 内 `position: fixed` 冒充固定到 ChatGPT 输入框，也不得操作跨域父页面 DOM。若无公开受支持的绑定接口，明确记录缺口并向用户提出可审阅的替代呈现方案；不能静默把随消息滚动的卡片标记为达到固定目标。视觉、分页、点击、键盘和摘要等已确定的独立改造可继续实施。
 

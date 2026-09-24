@@ -6,13 +6,13 @@ Ask User Question 是一个 ChatGPT / Codex 插件：当目标、范围、约束
 
 ## 当前状态
 
-本地实现已经完成：MCP 服务、四种题型 UI、校验与失败兜底、配套 skill、portable/compatibility manifest、容器构建文件和交付文档均已提供。类型检查、34 个 UI/服务测试、4 个诊断测试、本地 MCP 协议烟雾测试、Docker 运行、skill 校验和插件结构校验已通过。OpenAI Secure MCP Tunnel 已在 ChatGPT 浏览器端开发者模式完成工具发现、四题型卡片展示及 `ui/message` 答案回传验证；MCP 与 Tunnel 的 user systemd 服务也已启用，并通过健康、就绪和自动重启测试。
+本地实现已经完成：MCP 服务、四种题型 UI、校验与失败兜底、配套 skill、portable/compatibility manifest、容器构建文件和交付文档均已提供。类型检查、39 个 UI/服务测试、4 个诊断测试、本地 MCP 协议烟雾测试、Docker 运行、skill 校验和插件结构校验已通过。OpenAI Secure MCP Tunnel 已在 ChatGPT 浏览器端开发者模式完成工具发现、四题型卡片展示及 `ui/message` 答案回传验证；MCP 与 Tunnel 的 user systemd 服务也已启用，并通过健康、就绪和自动重启测试。
 
 **当前暂时使用 Cloudflare Quick Tunnel。** 本项目在手机/iPad 原生 ChatGPT 客户端通过 OpenAI Secure MCP Tunnel 调用时遇到 Organization Context 鉴权错误，同账号浏览器正常；该问题尚未修复。改用 Quick Tunnel 的 HTTPS 连接后，用户已确认手机提问、显示和提交成功，iPad 的该路径仍待验证。首次加载延迟暂不处理，具体证据见[客户端排查](docs/client-troubleshooting.md)和[Quick Tunnel 测试记录](docs/cloudflare-test.md)。
 
 以下步骤仍未完成：部署到稳定公网 HTTPS、写入真实 `plugin_asdk_app...` ID、安装包含 skill 的完整插件，以及按模型和提示统计停止等待行为。因此当前 `.app.json` 的 `apps` 映射仍为空，Tunnel 功能验收不能视为公开部署、完整插件安装或停止行为保证。详情见[验收记录](docs/acceptance.md)。
 
-2026-09-22 用户已确认 B 版 UI 预览：固定在输入框上方、多题分页、Enter 前进/提交和提交后问答摘要。正式改造尚未开始，由后续 5.6 sol 按 [实施计划](plan.md#31-布局与操作)及 [TODO](TODO.md) 执行；宿主输入框绑定能力须先核验，不能由独立网页预览推定支持。
+2026-09-22 用户已确认 B 版 UI 预览：固定在输入框上方、多题分页、Enter 前进/提交和提交后问答摘要。2026-09-24 正式 React MCP Apps UI 已实现 B 版视觉、逐题分页、草稿恢复、IME 安全提交、发送锁定、失败重试和成功问答摘要，并通过本地行为测试；结果见[验收记录](docs/acceptance.md)。本轮未在真实 ChatGPT 宿主复测 B 版，未测试 `requestModal` 宿主弹窗和移动端软键盘。宿主输入框绑定能力仍未核验，不能由独立网页预览推定支持。
 
 ## 功能
 
@@ -21,7 +21,10 @@ Ask User Question 是一个 ChatGPT / Codex 插件：当目标、范围、约束
 - 选择题默认提供 Other；`allow_other: false` 可隐藏。
 - 每个普通选项都有可选补充说明，提交时按 `选项 — 说明` 格式回传。
 - 必填、Other 空白、重复 ID、题数和选项数等输入/答案校验。
-- 同步重复提交锁、成功后禁用、失败保留输入和可选择的手动复制文本。
+- B 版浅色细边框、灰色编号、选中浅灰高亮和深色编号；整行可选择，模型说明与用户补充详情分开。
+- 多题每次显示一题，右上角提供 `1 / N` 和前后导航；回退恢复选项、Other、详情和文本草稿。
+- 原生表单统一处理按钮与 Enter；Shift + Enter 换行，并覆盖中文 IME 组合输入事件。
+- 发送中锁定编辑、翻页和重复提交；成功后只保留问答摘要，失败后保留草稿并提供手动重试和可选中复制文本。
 - 英文和简体中文固定 UI 文案，问题正文保持工具调用方提供的语言。
 - 无答案数据库；答案由 UI 直接通过 `ui/message` 交给聊天宿主。
 
@@ -113,6 +116,8 @@ Configure the organization ID or send the OpenAI-Organization header.
 
 - `ui/message` 发送答案，不是模型 suspend/resume 或强制停止接口。
 - UI 沙箱不支持 `navigator.clipboard`；发送失败时只展示可选择文本，由用户手动复制。
+- 2026-09-24 的 B 版正式 UI 本轮未在真实 ChatGPT 宿主验证；`requestModal` 宿主弹窗和移动端软键盘也未执行测试。
+- 公开接口仍未提供已验证的宿主输入框绑定路径；正式 UI 不使用 iframe `position: fixed` 冒充该能力。
 - 真实 ChatGPT 已完成一次四题型工具与 UI 回传功能验收，但没有逐项记录模型停止等待行为；该行为的正式统计执行次数仍为 0。
 - 当前服务不含业务认证。公开部署和提交前应按目标工作区要求决定是否增加认证、限流和日志策略。
 - 当前 `@openai/apps-sdk-ui@0.2.2` 的依赖树使完整 `npm audit` 报告 lodash 的已知问题，且 npm 当前没有可用修复。`npm audit --omit=dev` 对 Node 生产依赖报告 0 个漏洞，但仍应在发布前复核 UI 组件库更新及最终浏览器包。

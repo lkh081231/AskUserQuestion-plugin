@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import type { UiCopy } from "../copy";
 import type {
   Answer,
@@ -13,6 +14,8 @@ interface QuestionCardProps {
   copy: UiCopy;
   disabled: boolean;
   error?: string;
+  titleId: string;
+  ref?: RefObject<HTMLFieldSetElement | null>;
   onChange: (answer: Answer) => void;
 }
 
@@ -20,13 +23,19 @@ function TextQuestionControl({
   question,
   answer,
   copy,
+  disabled,
   onChange,
-}: Omit<QuestionCardProps, "disabled" | "error">) {
+}: Pick<
+  QuestionCardProps,
+  "question" | "answer" | "copy" | "disabled" | "onChange"
+>) {
   const textAnswer: TextAnswer =
     answer.kind === "text" ? answer : { kind: "text", text: "" };
   return (
     <textarea
       className="text-answer"
+      data-focus-control="answer"
+      disabled={disabled}
       aria-label={question.question}
       value={textAnswer.text}
       placeholder={question.placeholder ?? copy.textPlaceholder}
@@ -42,8 +51,12 @@ function ChoiceQuestionControl({
   question,
   answer,
   copy,
+  disabled,
   onChange,
-}: Omit<QuestionCardProps, "disabled" | "error">) {
+}: Pick<
+  QuestionCardProps,
+  "question" | "answer" | "copy" | "disabled" | "onChange"
+>) {
   if (question.type === "text") return null;
   const choice: ChoiceAnswer =
     answer.kind === "choice"
@@ -81,57 +94,91 @@ function ChoiceQuestionControl({
 
   return (
     <div className="options">
-      {options.map((option) => {
+      {options.map((option, index) => {
         const selected = choice.optionIds.includes(option.id);
         return (
-          <div className="option" data-selected={selected || undefined} key={option.id}>
+          <div
+            className="option"
+            data-selected={selected || undefined}
+            key={option.id}
+          >
             <label className="option-choice">
               <input
+                className="choice-input"
+                data-focus-control="choice"
+                disabled={disabled}
                 type={multiple ? "checkbox" : "radio"}
                 name={question.id}
                 checked={selected}
-                onChange={(event) => selectOption(option.id, event.target.checked)}
+                onChange={(event) =>
+                  selectOption(option.id, event.target.checked)
+                }
               />
-              <strong>{option.label}</strong>
+              <span className="option-number" aria-hidden="true">
+                {index + 1}
+              </span>
+              <span className="option-label">{option.label}</span>
+              <span className="option-tick" aria-hidden="true">
+                ✓
+              </span>
             </label>
-            {option.description ? <small>{option.description}</small> : null}
-            <input
-              className="note-input"
-              aria-label={`${option.label} — ${copy.notePlaceholder}`}
-              disabled={!selected}
-              value={choice.optionNotes[option.id] ?? ""}
-              placeholder={copy.notePlaceholder}
-              onChange={(event) =>
-                onChange({
-                  ...choice,
-                  optionNotes: {
-                    ...choice.optionNotes,
-                    [option.id]: event.target.value,
-                  },
-                })
-              }
-            />
+            {option.description ? (
+              <p className="option-description">{option.description}</p>
+            ) : null}
+            {selected ? (
+              <textarea
+                className="note-input"
+                disabled={disabled}
+                aria-label={`${option.label} — ${copy.notePlaceholder}`}
+                value={choice.optionNotes[option.id] ?? ""}
+                placeholder={copy.notePlaceholder}
+                rows={2}
+                onChange={(event) =>
+                  onChange({
+                    ...choice,
+                    optionNotes: {
+                      ...choice.optionNotes,
+                      [option.id]: event.target.value,
+                    },
+                  })
+                }
+              />
+            ) : null}
           </div>
         );
       })}
       {question.allow_other ? (
-        <div className="option" data-selected={choice.otherSelected || undefined}>
+        <div
+          className="option option-other"
+          data-selected={choice.otherSelected || undefined}
+        >
           <label className="option-choice">
             <input
+              className="choice-input"
+              data-focus-control="choice"
+              disabled={disabled}
               type={multiple ? "checkbox" : "radio"}
               name={question.id}
               checked={choice.otherSelected}
               onChange={(event) => selectOther(event.target.checked)}
             />
-            <strong>{copy.other}</strong>
+            <span className="option-number" aria-hidden="true">
+              +
+            </span>
+            <span className="option-label">{copy.other}</span>
+            <span className="option-tick" aria-hidden="true">
+              ✓
+            </span>
           </label>
           {choice.otherSelected ? (
-            <input
+            <textarea
               className="other-input"
+              data-focus-control="other"
+              disabled={disabled}
               aria-label={`${question.question} — ${copy.other}`}
-              autoFocus
               value={choice.otherText}
               placeholder={question.placeholder ?? copy.otherPlaceholder}
+              rows={2}
               onChange={(event) =>
                 onChange({ ...choice, otherText: event.target.value })
               }
@@ -149,24 +196,38 @@ export function QuestionCard({
   copy,
   disabled,
   error,
+  titleId,
+  ref,
   onChange,
 }: QuestionCardProps) {
+  const descriptionId = `${question.id}-description`;
   const errorId = `${question.id}-error`;
+  const describedBy = [
+    question.description ? descriptionId : null,
+    error ? errorId : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <fieldset disabled={disabled} aria-describedby={error ? errorId : undefined}>
-      <legend>
-        {question.question}
-        {question.required ? <span aria-label="required"> *</span> : null}
-      </legend>
+    <fieldset
+      ref={ref}
+      disabled={disabled}
+      aria-labelledby={titleId}
+      aria-describedby={describedBy || undefined}
+    >
+      <legend className="sr-only">{question.question}</legend>
       {question.description ? (
-        <p className="question-description">{question.description}</p>
+        <p className="question-description" id={descriptionId}>
+          {question.description}
+        </p>
       ) : null}
       {question.type === "text" ? (
         <TextQuestionControl
           question={question}
           answer={answer}
           copy={copy}
+          disabled={disabled}
           onChange={onChange}
         />
       ) : (
@@ -174,6 +235,7 @@ export function QuestionCard({
           question={question}
           answer={answer}
           copy={copy}
+          disabled={disabled}
           onChange={onChange}
         />
       )}

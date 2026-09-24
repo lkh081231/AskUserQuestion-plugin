@@ -126,15 +126,30 @@ export function QuestionForm({ data, copy, sendMessage }: QuestionFormProps) {
 export function AskUserQuestionsApp() {
   const [data, setData] = useState<QuestionFormData | null>(null);
   const [locale, setLocale] = useState<string>();
+  const [toolFailure, setToolFailure] = useState<"failed" | "cancelled" | null>(null);
 
   const onAppCreated = useCallback((app: AppInstance) => {
+    let terminated = false;
+    const stop = (reason: "failed" | "cancelled") => {
+      terminated = true;
+      setData(null);
+      setToolFailure(reason);
+    };
     const updateData = (candidate: unknown) => {
+      if (terminated) return;
       const value = candidate as QuestionFormData | undefined;
       if (value?.questions) setData(normalizeToolData(value));
     };
 
     app.ontoolinput = (input) => updateData(input.arguments);
-    app.ontoolresult = (result) => updateData(result.structuredContent);
+    app.ontoolresult = (result) => {
+      if (terminated) return;
+      if (result.isError) stop("failed");
+      else updateData(result.structuredContent);
+    };
+    app.ontoolcancelled = () => {
+      if (!terminated) stop("cancelled");
+    };
     app.onhostcontextchanged = (context) => {
       if (context.locale) setLocale(context.locale);
     };
@@ -152,6 +167,9 @@ export function AskUserQuestionsApp() {
   }, [app, isConnected]);
 
   const copy = getCopy(locale);
+  if (toolFailure) {
+    return <p role="alert">{toolFailure === "failed" ? copy.toolFailed : copy.toolCancelled}</p>;
+  }
   if (error) return <p role="alert">{copy.connectionFailed}</p>;
   if (!isConnected || !app || !data) {
     return <p role="status">{copy.loading}</p>;

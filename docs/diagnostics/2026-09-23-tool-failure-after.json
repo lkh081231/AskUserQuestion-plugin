@@ -1,0 +1,64 @@
+{
+  "time": "2026-09-23T16:27:03.882Z",
+  "scope": "local simulated host, not Windows/iOS/Android validation",
+  "resourceUri": "local-candidate-not-deployed",
+  "widgetSha256": "0bf7dc11a88d53e49a7b05b0fff7f5363b1e2a8c1e14cb3e09892879490ebbae",
+  "observations": [
+    {
+      "mode": "standard-input",
+      "cardVisible": true,
+      "submitAcknowledged": true,
+      "messageCount": 1,
+      "errors": [],
+      "methods": [
+        "ui/initialize",
+        "ui/notifications/initialized",
+        "ui/notifications/size-changed",
+        "ui/notifications/size-changed",
+        "ui/message"
+      ]
+    },
+    {
+      "mode": "standard-result",
+      "cardVisible": true,
+      "submitAcknowledged": true,
+      "messageCount": 1,
+      "errors": [],
+      "methods": [
+        "ui/initialize",
+        "ui/notifications/initialized",
+        "ui/notifications/size-changed",
+        "ui/notifications/size-changed",
+        "ui/message"
+      ]
+    },
+    {
+      "mode": "error-after-input",
+      "submitStillVisible": false,
+      "alert": "The question tool failed. Check the conversation for error details.",
+      "messageCount": 0,
+      "errors": [],
+      "methods": [
+        "ui/initialize",
+        "ui/notifications/initialized",
+        "ui/notifications/size-changed",
+        "ui/notifications/size-changed",
+        "ui/notifications/size-changed"
+      ]
+    },
+    {
+      "mode": "cancel-after-input",
+      "submitStillVisible": false,
+      "alert": "This question was cancelled.",
+      "messageCount": 0,
+      "errors": [],
+      "methods": [
+        "ui/initialize",
+        "ui/notifications/initialized",
+        "ui/notifications/size-changed",
+        "ui/notifications/size-changed",
+        "ui/notifications/size-changed"
+      ]
+    }
+  ]
+}

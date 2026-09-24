@@ -6,7 +6,7 @@ Ask User Question 是一个 ChatGPT / Codex 插件：当目标、范围、约束
 
 ## 当前状态
 
-本地实现已经完成：MCP 服务、四种题型 UI、校验与失败兜底、配套 skill、portable/compatibility manifest、容器构建文件和交付文档均已提供。类型检查、30 个自动化测试、本地 MCP 协议烟雾测试、Docker 运行、skill 校验和插件结构校验已通过。Secure MCP Tunnel 已在 ChatGPT 开发者模式完成工具发现、四题型卡片展示及 `ui/message` 答案回传验证；MCP 与 Tunnel 的 user systemd 服务也已启用，并通过健康、就绪和自动重启测试。
+本地实现已经完成：MCP 服务、四种题型 UI、校验与失败兜底、配套 skill、portable/compatibility manifest、容器构建文件和交付文档均已提供。类型检查、34 个 UI/服务测试、4 个诊断测试、本地 MCP 协议烟雾测试、Docker 运行、skill 校验和插件结构校验已通过。Secure MCP Tunnel 已在 ChatGPT 开发者模式完成工具发现、四题型卡片展示及 `ui/message` 答案回传验证；MCP 与 Tunnel 的 user systemd 服务也已启用，并通过健康、就绪和自动重启测试。
 
 以下步骤仍未完成：部署到稳定公网 HTTPS、写入真实 `plugin_asdk_app...` ID、安装包含 skill 的完整插件，以及按模型和提示统计停止等待行为。因此当前 `.app.json` 的 `apps` 映射仍为空，Tunnel 功能验收不能视为公开部署、完整插件安装或停止行为保证。详情见[验收记录](docs/acceptance.md)。
 

@@ -1,0 +1,32 @@
+{
+  "time": "2026-09-23T16:24:02.842Z",
+  "scope": "local simulated host, not Windows/iOS/Android validation",
+  "resourceUri": "ui://ask-user-questions/v1.html",
+  "widgetSha256": "685cd6b8f84c2accfca103961c3d7cb7d6923040ca34ae9a4d2091573dd24075",
+  "observations": [
+    {
+      "mode": "error-after-input",
+      "submitStillVisible": true,
+      "alertCount": 0,
+      "errors": [],
+      "methods": [
+        "ui/initialize",
+        "ui/notifications/initialized",
+        "ui/notifications/size-changed",
+        "ui/notifications/size-changed"
+      ]
+    },
+    {
+      "mode": "cancel-after-input",
+      "submitStillVisible": true,
+      "alertCount": 0,
+      "errors": [],
+      "methods": [
+        "ui/initialize",
+        "ui/notifications/initialized",
+        "ui/notifications/size-changed",
+        "ui/notifications/size-changed"
+      ]
+    }
+  ]
+}

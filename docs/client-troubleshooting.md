@@ -77,9 +77,33 @@ Tunnel 方法累计计数在两个失败样本前后发生如下变化，期间�
 | Windows | 应用无法启动，用户自行排查 | 没有本轮插件调用样本；候选 B 未部署 |
 | 00:07 Android，退出并重开应用后 | 仍为 UNAUTHORIZED | 16:06–16:09 UTC 的 Tunnel journal 无事件，管理日志无该窗口转发；尚缺该次完整响应/request ID |
 
-本轮排除了“只重开 Android 应用即可恢复”。在线服务保持 A 版，没有修改组织关联或发布兼容补丁。已请求同账号重新登录后的单次复测，结果待补。
+本轮排除了“只重开 Android 应用即可恢复”。在线服务保持 A 版，没有修改组织关联或发布兼容补丁。已请求同账号重新登录后的单次复测，用户随后确认 UTC+8 00:29 正常显示。
 
 [16:09 诊断快照](diagnostics/2026-09-23-mobile-snapshot.json)中 `tools/call/200=9`、`resources/read/200=8`；该快照采于 Android 失败**之后**，不能冒充失败前基线。16:10 再采样计数未变只说明两个快照之间无已计数完成请求；入口判断主要依据用户报错与对应时间窗口日志，仍需平台鉴权证据。
+
+## 00:17 复测与前后台切换闪动
+
+用户在重新登录复测请求后回报 UTC+8 2026-09-24 00:17 仍失败，并观察到切后台再回前台后卡片区域闪动；截图中仍显示 active organization context 的 UNAUTHORIZED。[该次分享记录](https://chatgpt.com/share/6ab3fbe1-de30-83ec-945b-c0adde795757?ogimg=plain)
+
+正常 HTTP GET 获取分享页后，仅解析相关消息元数据：会话 request ID 为 `ba379803-7727-4c1e-9706-0ff9309cc148`；工具消息时间为 UTC 16:18:07.808、16:18:09.771（UTC+8 00:18），最终回复报告调用失败。两条工具消息的原始输出均被分享功能隐藏，因此不能将助手的解释当作已取得原始鉴权响应。
+
+截至 UTC 16:27:32 的[诊断快照](diagnostics/2026-09-23-android-0017.json)，相较 16:09 的失败前快照，同一 Tunnel 进程的 `tools/call`、`resources/read` 等全部方法计数未增加，16:15 起没有转发事件。闪动不能作为调用成功或新 UI 资源读取的证据；仍可能涉及宿主占位区域、缓存资源或前台恢复时的重挂载，具体原因待原生组件日志。
+
+分享记录的模型为 `gpt-5-6-instant`，与此前用户报告的浏览器 GPT-5.6 Sol 名称未对齐，尚未确认是显示别名还是不同模型。已请求在浏览器打开这条安卓原始对话，保持模型及连接重新调用，形成更严格的对照；用户随后确认 UTC+8 00:29 正常显示。
+
+### 00:29 同一原始对话的浏览器对照
+
+用户按上述要求在浏览器重试，并回报 UTC+8 2026-09-24 00:29 正常。[本机快照](diagnostics/2026-09-23-browser-0029.json)记录 UTC 16:29:41.690 和 16:29:57.321 两次转发；相较 16:09 快照，同一进程的 `tools/call/200` 与 `resources/read/200` 各增加 1，其余计数不变。线上仍为 A 版，未修改配置或重启服务。
+
+这是时间窗口关联，成功调用尚无分享 request ID 与本机逐条精确匹配，也未独立复核本次实际解析的模型。结合用户的同对话对照，证据进一步指向原生客户端与浏览器之间的调用入口/上下文差异；不能据此断言具体哪个平台组件丢失了组织上下文。下一步需要平台侧核查失败 request ID 的鉴权轨迹，而不是反复重登或修改本机 MCP 响应头。支持摘要已补齐成功与失败对照，尚未对外发送。
+
+### 独立发现的 UI 错误处理缺口
+
+以在线 HTML 做本地沙箱实验，先发送题目输入，再发送标准工具失败或取消通知：旧 UI 仍显示提交按钮，未出现错误提示。已在源码修复：失败/取消后移除编辑表单、显示本地化提示，迟到的输入或结果不恢复已终止表单。没有复制原始错误正文到组件，也不自动重发答案。
+
+[修复前实验](diagnostics/2026-09-23-tool-failure-before.json)和[修复后实验](diagnostics/2026-09-23-tool-failure-after.json)证明该错误处理路径的行为变化；修复后标准输入/结果两条正常路径均可显示并只提交一次，失败/取消场景没有发送消息。`npm run check` 通过 34 个 UI/服务测试、4 个诊断测试、7 项本地 MCP 验收及其余检查。
+
+这是已复现的本地缺口，**未证明为 Android 闪动根因，也不能修复入口鉴权**。只有宿主创建了 UI 并投递对应失败/取消通知时，该修复才生效。源码候选尚未部署，在线 `dist` 恢复 A 版；原 Windows 单字段候选仍保持旧 HTML，不混入本次 UI 行为变更。
 
 ## 已验证的服务侧事实
 
@@ -230,7 +254,21 @@ Android: 1.2026.258 (15). After fully closing and reopening the app,
 UNAUTHORIZED persisted at 2026-09-24 00:07 UTC+8 / 2026-09-23 16:07 UTC.
 No local Tunnel journal events or matching admin forwarding events were found
 in the 16:06-16:09 UTC window. A new request ID/raw response is still needed.
-A fresh-login comparison has been requested but has no result yet.
+A subsequent fresh-login test still failed around 2026-09-24 00:17 UTC+8.
+Share: https://chatgpt.com/share/6ab3fbe1-de30-83ec-945b-c0adde795757?ogimg=plain
+Shared-message request_id: ba379803-7727-4c1e-9706-0ff9309cc148
+Shared tool message timestamps: 2026-09-23 16:18:07.808 and 16:18:09.771 UTC.
+Raw tool outputs were redacted by sharing. The screenshot/final response report
+UNAUTHORIZED requiring an active organization context.
+The user sees the card region flicker after backgrounding and foregrounding.
+No new tools/call or resources/read counters through 16:27 UTC compared to the
+16:09 snapshot, and no forwarding events since 16:15 UTC.
+Shared model metadata is gpt-5-6-instant; a same-conversation browser retry was
+completed successfully per the user at 2026-09-24 00:29 UTC+8.
+Local forwarding events appeared at 16:29:41.690 and 16:29:57.321 UTC;
+tools/call/200 and resources/read/200 each increased by 1 with no service restart
+or config change. This is time-window correlation; the successful retry has no
+shared request ID or independently verified resolved-model metadata yet.
 iOS/iPad: 1.2026.251(34655566626).
 Windows: 26.905.11957. Later testing is paused because the user reports the
 Windows app itself will not open; no evidence links this startup issue to MCP.

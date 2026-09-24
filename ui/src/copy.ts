@@ -16,6 +16,8 @@ export interface UiCopy {
   loading: string;
   noQuestions: string;
   connectionFailed: string;
+  toolFailed: string;
+  toolCancelled: string;
 }
 
 const english: UiCopy = {
@@ -36,6 +38,8 @@ const english: UiCopy = {
   loading: "Loading questions…",
   noQuestions: "No questions were provided.",
   connectionFailed: "Unable to connect to the chat host.",
+  toolFailed: "The question tool failed. Check the conversation for error details.",
+  toolCancelled: "This question was cancelled.",
 };
 
 const chinese: UiCopy = {
@@ -56,6 +60,8 @@ const chinese: UiCopy = {
   loading: "正在加载问题…",
   noQuestions: "没有可显示的问题。",
   connectionFailed: "无法连接到聊天宿主。",
+  toolFailed: "提问工具调用失败，请在对话中查看错误详情。",
+  toolCancelled: "本次提问已取消。",
 };
 
 export function getCopy(locale?: string): UiCopy {

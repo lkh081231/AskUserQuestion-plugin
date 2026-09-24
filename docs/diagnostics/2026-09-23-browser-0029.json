@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "samplingStartedAt": "2026-09-23T16:32:54.758Z",
+  "capturedAt": "2026-09-23T16:32:54.870Z",
+  "since": "2026-09-23T16:28:00Z",
+  "tunnelStartedAt": "2026-09-22T06:48:01.637809302Z",
+  "endpoints": {
+    "status": {
+      "ok": true,
+      "httpStatus": 200
+    },
+    "health": {
+      "ok": true,
+      "httpStatus": 200
+    },
+    "ready": {
+      "ok": true,
+      "httpStatus": 200
+    },
+    "metrics": {
+      "ok": true,
+      "httpStatus": 200
+    },
+    "logs": {
+      "ok": true,
+      "httpStatus": 200
+    }
+  },
+  "counts": [
+    {
+      "method": "initialize",
+      "status": "200",
+      "count": 8
+    },
+    {
+      "method": "notifications/initialized",
+      "status": "202",
+      "count": 3
+    },
+    {
+      "method": "resources/read",
+      "status": "200",
+      "count": 9
+    },
+    {
+      "method": "server/discover",
+      "status": "400",
+      "count": 3
+    },
+    {
+      "method": "tools/call",
+      "status": "200",
+      "count": 10
+    },
+    {
+      "method": "tools/list",
+      "status": "200",
+      "count": 2
+    }
+  ],
+  "logWindow": {
+    "availableEntries": 217,
+    "requestedLimit": 2000,
+    "oldestAvailableEventAt": "2026-09-22T06:48:01.637900554Z"
+  },
+  "events": [
+    {
+      "time": "2026-09-23T16:29:41.690270325Z",
+      "kind": "forwarded",
+      "requestId": "cmd_7d898b74_56c4_49fc_b548_1aa7d2ed4517",
+      "commandRequestId": "85fdd47c-11b3-4975-960c-399eb4724b79/nu5q",
+      "rpcRequestId": 0
+    },
+    {
+      "time": "2026-09-23T16:29:57.321465895Z",
+      "kind": "forwarded",
+      "requestId": "cmd_4baf6fc9_a97a_42ac_8863_a48ef0b03b98",
+      "commandRequestId": "6ee58d87-38d3-4ee8-92c5-778fef2670a9/s7pf",
+      "rpcRequestId": 0
+    }
+  ],
+  "comparison": {
+    "state": "comparable",
+    "counts": [
+      {
+        "method": "initialize",
+        "status": "200",
+        "count": 0
+      },
+      {
+        "method": "notifications/initialized",
+        "status": "202",
+        "count": 0
+      },
+      {
+        "method": "resources/read",
+        "status": "200",
+        "count": 1
+      },
+      {
+        "method": "server/discover",
+        "status": "400",
+        "count": 0
+      },
+      {
+        "method": "tools/call",
+        "status": "200",
+        "count": 1
+      },
+      {
+        "method": "tools/list",
+        "status": "200",
+        "count": 0
+      }
+    ]
+  },
+  "limitations": [
+    "Counts have no client labels; HTTP 200 does not establish tool isError=false.",
+    "Snapshots are not atomic; requests may complete while sampling.",
+    "Local log retention is bounded; no matching event is not proof of no upstream request."
+  ]
+}

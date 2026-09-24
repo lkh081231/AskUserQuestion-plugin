@@ -1,6 +1,6 @@
 # 原生客户端修复方案
 
-制定日期：2026-09-23。状态：**Windows 元数据候选已实现并通过完整本地检查；浏览器 A 版基线正常，Windows 因客户端无法启动暂缓；尚未部署候选，原生端尚未修复。** 既有请求 ID、版本和日志见[排查记录](client-troubleshooting.md)。本方案独立于交给 5.6 sol 的 B 版视觉、分页和提交摘要改造。
+制定日期：2026-09-23；更新日期：2026-09-24。状态：**Windows 元数据候选已实现并通过完整本地检查；浏览器 A 版基线正常，Windows 因客户端无法启动暂缓；原生端尚未修复。用户新增要求先部署 Cloudflare Tunnel 测试：连接器已就绪，域名路由与客户端验证待完成。** 既有请求 ID、版本和日志见[排查记录](client-troubleshooting.md)。本方案独立于交给 5.6 sol 的 B 版视觉、分页和提交摘要改造。
 
 ## 1. 结论与执行顺序
 
@@ -127,6 +127,8 @@ iPad request ID：`3ab0ad39-142e-4ba2-a8b7-92898ebdbca6`，失败约 2026-09-23 
 
 ### 4.3 备选：独立受保护的 HTTPS MCP 连接
 
+以下为原正式部署方案。2026-09-24 用户明确改为先部署 Cloudflare Tunnel 做临时 HTTPS 对照；此次测试复用当前无应用认证的 A 版服务，实际状态、访问边界和回退见[Cloudflare 测试记录](cloudflare-test.md)。不将临时匿名测试端点视为已完成下述正式认证部署。
+
 当私有 Tunnel 路径暂时无法恢复、且确实需要原生端调用时，准备独立 HTTPS 测试连接，直接转发到当前本地 MCP 服务：
 
 ```text
@@ -164,6 +166,8 @@ ChatGPT → 受保护的 HTTPS /mcp → 当前 MCP 服务
 官方合并变更日志中的 MCP App UI 元数据保留修复 `#45805` 位于 **Codex CLI 0.156.0** 的变更列表，不能当作普通 ChatGPT Chat 模式 Windows `26.905.11957` 已知缺陷或保证升级有效的依据。[产品变更日志](https://learn.chatgpt.com/docs/changelog)
 
 ## 7. 实施记录
+
+2026-09-24 用户补充：已在 ChatGPT 选择 Tunnel 方式新建连接，手机/iPad 仍报相同的 active organization context 错误，后续不重复要求重建。用户随后提供 Cloudflare Tunnel 运行令牌并要求先部署测试。07:23 UTC 已启动独立 Docker 连接器，4 条连接就绪；未重建、重启或替换原 MCP 服务及 Secure MCP Tunnel，公网路由与真机结果见[测试记录](cloudflare-test.md)。
 
 2026-09-23 15:44 UTC（UTC+8 23:44），已在 `server/tools/askUserQuestions.ts` 增加 `openai/outputTemplate`，并在本地 MCP 验收脚本检查双 URI 相同、通过别名可读取对应资源。`npm run check` 全部通过：类型检查、30 个测试、构建、7 项本地 MCP 验收、包结构及文档检查。
 

@@ -75,6 +75,7 @@ APP_ORIGIN=https://questions.example.com PORT=8787 npm start
 
 - [部署 MCP 服务](docs/deployment.md)
 - [Secure MCP Tunnel 常态化部署](docs/tunnel-deployment.md)
+- [Cloudflare Tunnel 移动端对照测试](docs/cloudflare-test.md)
 - [注册连接并安装插件](docs/installation.md)
 - [公开发布材料与检查清单](docs/publishing.md)
 - [验收记录](docs/acceptance.md)
